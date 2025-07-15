@@ -78,13 +78,7 @@ check_infrastructure_config() {
     local config_errors=0
     
     # Check for required files
-    required_files=(
-        "README.md"
-        "LICENSE"
-        ".gitignore"
-    )
-    
-    for file in "${required_files[@]}"; do
+    for file in "README.md" "LICENSE" ".gitignore"; do
         if [ ! -f "$file" ]; then
             print_error "❌ Required file missing: $file"
             config_errors=1
@@ -123,13 +117,8 @@ check_security_posture() {
     print_info "Running security posture validation..."
     
     # Check for security documentation
-    security_docs=(
-        "SECURITY-COMPLIANCE.md"
-        "SECURITY-2025-STANDARDS.md"
-    )
-    
     missing_docs=0
-    for doc in "${security_docs[@]}"; do
+    for doc in "SECURITY-COMPLIANCE.md" "SECURITY-2025-STANDARDS.md"; do
         if [ ! -f "$doc" ]; then
             print_warning "⚠️  Security documentation missing: $doc"
             missing_docs=1
@@ -201,16 +190,9 @@ run_final_tests() {
     print_info "Running final pre-push tests..."
     
     # Test that main scripts have basic syntax validation
-    scripts_to_test=(
-        "ansible-lxc.sh"
-        "ansible-rocky-lxc-deploy.sh"
-        "security-hardening.sh"
-        "security-hardening-2025.sh"
-    )
-    
     test_failures=0
     
-    for script in "${scripts_to_test[@]}"; do
+    for script in "ansible-lxc.sh" "ansible-rocky-lxc-deploy.sh" "security-hardening.sh" "security-hardening-2025.sh"; do
         if [ -f "$script" ]; then
             print_info "Testing syntax of $script..."
             if ! bash -n "$script"; then
