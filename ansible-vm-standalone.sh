@@ -117,7 +117,7 @@ function default_settings() {
   START_VM="yes"
   MACHINE="q35"
   CACHE=""
-  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.3-x86_64-minimal.iso"
+  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso"
   ISO_PATH=""
   STORAGE="local-lvm"
   BOOT_ORDER="scsi0"
@@ -343,7 +343,7 @@ function download_iso() {
   msg_info "Checking for Rocky Linux 9 ISO"
   
   # Check if ISO already exists
-  ISO_FILE="rocky-9.3-x86_64-minimal.iso"
+  ISO_FILE="rocky-9.6-x86_64-minimal.iso"
   if pvesm list local | grep -q "$ISO_FILE"; then
     msg_ok "Rocky Linux 9 ISO already available"
     ISO_PATH="local:iso/$ISO_FILE"
@@ -351,12 +351,12 @@ function download_iso() {
   fi
   
   # Download ISO to ProxMox ISO storage
-  msg_info "Downloading Rocky Linux 9 ISO (this may take several minutes)"
+  msg_info "Downloading Rocky Linux 9.6 ISO (this may take several minutes)"
   cd /var/lib/vz/template/iso/
   wget -q --show-progress "$ISO_URL" -O "$ISO_FILE"
   
   if [ $? -eq 0 ]; then
-    msg_ok "Rocky Linux 9 ISO downloaded successfully"
+    msg_ok "Rocky Linux 9.6 ISO downloaded successfully"
     ISO_PATH="local:iso/$ISO_FILE"
   else
     msg_error "Failed to download Rocky Linux 9 ISO"
@@ -442,7 +442,7 @@ function create_kickstart_file() {
   
   # Generate kickstart file
   cat > /var/lib/vz/template/iso/kickstart/rocky9-ansible-vm.ks << EOF
-#version=ROCKY9
+#version=ROCKY96
 # System authorization information
 auth --enableshadow --passalgo=sha512
 # Use CDROM installation media

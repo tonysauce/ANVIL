@@ -48,7 +48,7 @@ function default_settings() {
   START_VM="yes"
   MACHINE="q35"
   CACHE=""
-  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.3-x86_64-minimal.iso"
+  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso"
   ISO_PATH=""
   STORAGE="local-lvm"
   BOOT_ORDER="scsi0"
@@ -282,7 +282,7 @@ function download_iso() {
   msg_info "Checking for Rocky Linux 9 ISO"
   
   # Check if ISO already exists
-  ISO_FILE="rocky-9.3-x86_64-minimal.iso"
+  ISO_FILE="rocky-9.6-x86_64-minimal.iso"
   if pvesm list local | grep -q "$ISO_FILE"; then
     msg_ok "Rocky Linux 9 ISO already available"
     ISO_PATH="local:iso/$ISO_FILE"
