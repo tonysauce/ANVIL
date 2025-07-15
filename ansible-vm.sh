@@ -277,38 +277,87 @@ function update_script() {
   exit
 }
 
-# Function to download Rocky Linux ISO if needed
-function download_iso() {
-  msg_info "Checking for Rocky Linux 9 ISO"
+# Function to check for Rocky Linux ISO (industry standard approach)
+function check_iso() {
+  msg_info "Checking for Rocky Linux 9.6 ISO"
   
   # Check if ISO already exists
   ISO_FILE="rocky-9.6-x86_64-minimal.iso"
-  if pvesm list local | grep -q "$ISO_FILE"; then
-    msg_ok "Rocky Linux 9 ISO already available"
+  if pvesm list local --content iso | grep -q "$ISO_FILE"; then
+    # Verify the ISO has actual content (not 0 bytes)
+    local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $5}')
+    if [ "$iso_size" != "0" ] && [ -n "$iso_size" ]; then
+      msg_ok "Rocky Linux 9.6 ISO found and verified"
+      ISO_PATH="local:iso/$ISO_FILE"
+      return 0
+    fi
+  fi
+  
+  # ISO not found or corrupted - try auto-download first
+  msg_info "Rocky Linux 9.6 ISO not found. Attempting download..."
+  
+  # Check if we can reach the internet (for air-gapped detection)
+  if ! ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+    show_manual_iso_instructions
+    return 1
+  fi
+  
+  # Attempt download
+  msg_info "Downloading Rocky Linux 9.6 ISO (this may take several minutes)"
+  cd /var/lib/vz/template/iso/
+  
+  if wget -q --show-progress --timeout=30 "$ISO_URL" -O "$ISO_FILE"; then
+    msg_ok "Rocky Linux 9.6 ISO downloaded successfully"
     ISO_PATH="local:iso/$ISO_FILE"
     return 0
-  fi
-  
-  # Download ISO to ProxMox ISO storage
-  msg_info "Downloading Rocky Linux 9 ISO (this may take several minutes)"
-  cd /var/lib/vz/template/iso/
-  wget -q --show-progress "$ISO_URL" -O "$ISO_FILE"
-  
-  if [ $? -eq 0 ]; then
-    msg_ok "Rocky Linux 9 ISO downloaded successfully"
-    ISO_PATH="local:iso/$ISO_FILE"
   else
-    msg_error "Failed to download Rocky Linux 9 ISO"
-    exit 1
+    # Download failed - show manual instructions
+    rm -f "$ISO_FILE" 2>/dev/null  # Clean up partial download
+    show_manual_iso_instructions
+    return 1
   fi
+}
+
+# Function to show manual ISO download instructions
+function show_manual_iso_instructions() {
+  msg_error "Rocky Linux 9.6 ISO not available!"
+  echo ""
+  echo -e "${YW}This script requires Rocky Linux 9.6 minimal ISO to create the VM.${CL}"
+  echo ""
+  echo -e "${GN}📥 Download Options:${CL}"
+  echo ""
+  echo -e "${BL}Option 1: ProxMox Web Interface (Recommended)${CL}"
+  echo -e "  1. Open ProxMox web interface"
+  echo -e "  2. Go to: Datacenter > Storage > local > ISO Images"
+  echo -e "  3. Click 'Download from URL'"
+  echo -e "  4. URL: ${GN}https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso${CL}"
+  echo -e "  5. Wait for download to complete"
+  echo ""
+  echo -e "${BL}Option 2: Command Line Download${CL}"
+  echo -e "  ${GN}cd /var/lib/vz/template/iso/${CL}"
+  echo -e "  ${GN}wget https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso${CL}"
+  echo ""
+  echo -e "${BL}Option 3: Manual Upload (Air-Gapped Environments)${CL}"
+  echo -e "  1. Download ISO on internet-connected machine"
+  echo -e "  2. Transfer to ProxMox host via SCP/USB/etc."
+  echo -e "  3. Place in: ${GN}/var/lib/vz/template/iso/${CL}"
+  echo -e "  4. Ensure filename: ${GN}rocky-9.6-x86_64-minimal.iso${CL}"
+  echo ""
+  echo -e "${BL}Option 4: Alternative Rocky Linux Versions${CL}"
+  echo -e "  If you have a different Rocky Linux 9.x ISO:"
+  echo -e "  ${GN}ln -s /var/lib/vz/template/iso/your-rocky-iso.iso /var/lib/vz/template/iso/rocky-9.6-x86_64-minimal.iso${CL}"
+  echo ""
+  echo -e "${YW}After obtaining the ISO, run this script again.${CL}"
+  echo ""
+  exit 1
 }
 
 # Main VM creation function
 function create_vm() {
   msg_info "Creating Virtual Machine"
   
-  # Download ISO if needed
-  download_iso
+  # Check for required ISO
+  check_iso
   
   # Create the VM
   pvesm alloc $STORAGE $VM_ID vm-$VM_ID-disk-0.raw ${DISK_SIZE}G
