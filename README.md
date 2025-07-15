@@ -50,15 +50,21 @@ This script automates the deployment of a complete Ansible infrastructure server
 - Network access for package downloads
 - Rocky Linux 9 LXC template (automatically downloaded)
 
-### 🚀 One-Liner Installation (Recommended)
+### 🚀 One-Liner Installation
 
-**Copy and paste this command into your ProxMox shell:**
+Choose between LXC Container or Virtual Machine deployment:
 
+#### **LXC Container (Lightweight)**
 ```bash
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)"
 ```
 
-This follows the exact same pattern as ProxMox Community Scripts and provides an interactive setup with both default and advanced configuration options.
+#### **Virtual Machine (Recommended for Management Platform)**
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh)"
+```
+
+Both options follow the exact same pattern as ProxMox Community Scripts and provide interactive setup with default and advanced configuration options.
 
 ### Alternative: Manual Installation
 
@@ -67,23 +73,33 @@ This follows the exact same pattern as ProxMox Community Scripts and provides an
 git clone https://github.com/tonysauce/ansible-lxc-deploy.git
 cd ansible-lxc-deploy
 
-# Run with defaults
-./ansible-rocky-lxc-deploy.sh
+# For LXC Container
+./ansible-lxc.sh
+
+# For Virtual Machine
+./ansible-vm.sh
 ```
 
 ### Custom Deployment
 
 ```bash
-# Deploy with custom settings
+# Deploy LXC with custom settings
 CONTAINER_ID=201 \
 CONTAINER_IP=192.168.1.100/24 \
 CONTAINER_MEMORY=4096 \
-./ansible-rocky-lxc-deploy.sh
+./ansible-lxc.sh
+
+# Deploy VM with custom settings  
+VM_ID=301 \
+VM_IP=192.168.1.100/24 \
+VM_MEMORY=8192 \
+VM_DISK=64 \
+./ansible-vm.sh
 ```
 
 ## Configuration Options
 
-### Environment Variables
+### LXC Container Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -95,6 +111,19 @@ CONTAINER_MEMORY=4096 \
 | `CONTAINER_CORES` | 2 | CPU cores |
 | `CONTAINER_DISK` | 20 | Disk size in GB |
 | `CONTAINER_IP` | dhcp | IP address configuration |
+| `TANG_PORT` | 7500 | Tang server port |
+
+### Virtual Machine Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VM_ID` | 300 | ProxMox VM ID |
+| `VM_HOSTNAME` | ansible-vm | VM hostname |
+| `VM_MEMORY` | 4096 | Memory in MB |
+| `VM_CORES` | 4 | CPU cores |
+| `VM_DISK` | 32 | Disk size in GB |
+| `VM_IP` | dhcp | IP address configuration |
+| `VM_STORAGE` | local-lvm | Storage location |
 | `TANG_PORT` | 7500 | Tang server port |
 
 ### Network Configuration
