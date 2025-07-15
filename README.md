@@ -31,15 +31,25 @@ This script automates the deployment of a complete Ansible infrastructure server
 ## Quick Start
 
 ### Prerequisites
-- ProxMox VE host
-- Rocky Linux 9 LXC template (automatically downloaded)
+- ProxMox VE host (version 8.0 or higher)
 - Network access for package downloads
+- Rocky Linux 9 LXC template (automatically downloaded)
 
-### Basic Deployment
+### 🚀 One-Liner Installation (Recommended)
+
+**Copy and paste this command into your ProxMox shell:**
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)"
+```
+
+This follows the exact same pattern as ProxMox Community Scripts and provides an interactive setup with both default and advanced configuration options.
+
+### Alternative: Manual Installation
 
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/tonysauce/ansible-lxc-deploy.git
 cd ansible-lxc-deploy
 
 # Run with defaults

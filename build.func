@@ -1,0 +1,370 @@
+#!/usr/bin/env bash
+
+# Build functions for Ansible LXC Deployment
+# Based on ProxMox Community Scripts pattern
+# Copyright (c) 2024 Infrastructure as Code Deployment
+# Licensed under MIT License
+
+# Color codes
+RD=$(echo "\033[01;31m")
+YW=$(echo "\033[33m")
+GN=$(echo "\033[1;92m")
+CL=$(echo "\033[m")
+BFR="\\r\\033[K"
+HOLD="25"
+CM="${GN}✓${CL}"
+CROSS="${RD}✗${CL}"
+
+# Standard output handlers
+set -Eeuo pipefail
+trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
+
+# Error handler
+error_handler() {
+  local exit_code="$?"
+  local line_number="$1"
+  local command="$2"
+  echo -e "\n$CROSS Command '$command' failed on line $line_number with exit code $exit_code"
+}
+
+# Message functions
+msg_info() {
+  local msg="$1"
+  echo -ne " ${HOLD} ${YW}${msg}..."
+}
+
+msg_ok() {
+  local msg="$1"
+  echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
+}
+
+msg_error() {
+  local msg="$1"
+  echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
+}
+
+# Header display
+header_info() {
+cat <<"EOF"
+    ___              _ __    __         __   _  ________
+   /   |  ____  ___ (_) /_  / /__      / /  | |/ / ____/
+  / /| | / __ \/ __ \/ / __ \/ / _ \    / /   |   / /     
+ / ___ |/ / / / /_/ / / /_/ / /  __/   / /___/   / /___   
+/_/  |_/_/ /_/\____/_/_.___/_/\___/   /_____/_/|_\____/   
+
+         Rocky Linux 9 Deployment for ProxMox
+EOF
+}
+
+# Standard output redirect
+STD=""
+
+# Spinner function
+spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+# Variables function (to be called in main script)
+variables() {
+  NSAPP=$(echo ${NSAPP,,} | tr -d ' ')
+  var_version="24.04"
+  var_install="rocky"
+  var_os="$var_install"
+  var_version="9"
+  INTEGER='^[0-9]+([.][0-9]+)?$'
+}
+
+# Color function 
+color() {
+  YW=$(echo "\033[33m")
+  RD=$(echo "\033[01;31m")
+  BL=$(echo "\033[36m")
+  GN=$(echo "\033[1;92m")
+  CL=$(echo "\033[m")
+  BFR="\\r\\033[K"
+  HOLD=" "
+  CM="${GN}✓${CL}"
+  CROSS="${RD}✗${CL}"
+}
+
+# Catch errors function
+catch_errors() {
+  set -Eeuo pipefail
+  trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
+}
+
+# Advanced settings function
+advanced_settings() {
+  while true; do
+    if CT_TYPE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --title "CONTAINER TYPE" --radiolist --cancel-button Exit-Script "Choose Type" 10 58 2 \
+      "1" "Unprivileged" ON \
+      "0" "Privileged" OFF \
+      3>&1 1>&2 2>&3); then
+      if [ $CT_TYPE -eq 1 ]; then
+        echo -e "${BL}[Info]${CL} Using Unprivileged LXC"
+        PCT_UNPRIVILEGED="1"
+        PCT_FEATURES="keyctl=1,nesting=1"
+      else
+        echo -e "${BL}[Info]${CL} Using Privileged LXC"
+        PCT_UNPRIVILEGED="0"
+        PCT_FEATURES="nesting=1"
+      fi
+    else
+      exit-script
+    fi
+
+    if CT_ID=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Container ID" 8 58 $NEXTID --title "CONTAINER ID" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$CT_ID" ]; then
+        CT_ID="$NEXTID"
+        echo -e "${BL}[Info]${CL} Using Container ID: $CT_ID"
+      else
+        echo -e "${BL}[Info]${CL} Container ID: $CT_ID"
+      fi
+    else
+      exit-script
+    fi
+
+    if CT_NAME=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Hostname" 8 58 $NSAPP --title "HOSTNAME" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$CT_NAME" ]; then
+        HN="$NSAPP"
+      else
+        HN=$(echo ${CT_NAME,,} | tr -d ' ')
+      fi
+      echo -e "${BL}[Info]${CL} Using Hostname: $HN"
+    else
+      exit-script
+    fi
+
+    if DISK_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set Disk Size in GB" 8 58 $var_disk --title "DISK SIZE" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$DISK_SIZE" ]; then
+        DISK_SIZE="$var_disk"
+        echo -e "${BL}[Info]${CL} Using Disk Size: $DISK_SIZE"
+      else
+        if ! [[ $DISK_SIZE =~ $INTEGER ]]; then
+          echo -e "${RD}⚠ DISK SIZE MUST BE AN INTEGER NUMBER!${CL}"
+          advanced_settings
+        fi
+        echo -e "${BL}[Info]${CL} Using Disk Size: $DISK_SIZE"
+      fi
+    else
+      exit-script
+    fi
+
+    if CORE_COUNT=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate CPU Cores" 8 58 $var_cpu --title "CORE COUNT" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$CORE_COUNT" ]; then
+        CORE_COUNT="$var_cpu"
+        echo -e "${BL}[Info]${CL} Allocated Cores: $CORE_COUNT"
+      else
+        echo -e "${BL}[Info]${CL} Allocated Cores: $CORE_COUNT"
+      fi
+    else
+      exit-script
+    fi
+
+    if RAM_SIZE=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Allocate RAM in MiB" 8 58 $var_ram --title "RAM" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$RAM_SIZE" ]; then
+        RAM_SIZE="$var_ram"
+        echo -e "${BL}[Info]${CL} Allocated RAM: $RAM_SIZE"
+      else
+        echo -e "${BL}[Info]${CL} Allocated RAM: $RAM_SIZE"
+      fi
+    else
+      exit-script
+    fi
+
+    if BRG=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set a Bridge" 8 58 vmbr0 --title "BRIDGE" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z "$BRG" ]; then
+        BRG="vmbr0"
+        echo -e "${BL}[Info]${CL} Using Bridge: $BRG"
+      else
+        echo -e "${BL}[Info]${CL} Using Bridge: $BRG"
+      fi
+    else
+      exit-script
+    fi
+
+    if NET=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set a Static IPv4 CIDR Address (/24)" 8 58 dhcp --title "IP ADDRESS" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z $NET ]; then
+        NET="dhcp"
+        echo -e "${BL}[Info]${CL} Using IP Address: $NET"
+      else
+        echo -e "${BL}[Info]${CL} Using IP Address: $NET"
+      fi
+    else
+      exit-script
+    fi
+
+    if GATE1=$(whiptail --backtitle "Proxmox VE Helper Scripts" --inputbox "Set a Gateway IP (mandatory if Static IP was used)" 8 58 --title "GATEWAY IP" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
+      if [ -z $GATE1 ]; then
+        GATE1="Default"
+        GATE=""
+      else
+        GATE=",gw=$GATE1"
+      fi
+      echo -e "${BL}[Info]${CL} Using Gateway IP Address: $GATE1"
+    else
+      exit-script
+    fi
+
+    if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "ADVANCED SETTINGS COMPLETE" --yesno "Ready to create Ansible LXC Container?" --no-button Do-Over 10 58); then
+      echo -e "${BL}[Info]${CL} Creating LXC Container..."
+      break
+    else
+      echo -e "${RD}[Warning]${CL} Restarting Advanced Settings..."
+      advanced_settings
+    fi
+  done
+}
+
+# Default settings function
+default_settings() {
+  echo -e "${BL}[Info]${CL} Using Default Settings"
+  CT_TYPE="1"
+  PCT_UNPRIVILEGED="1"
+  PCT_FEATURES="keyctl=1,nesting=1"
+  CT_ID=$NEXTID
+  HN=$NSAPP
+  DISK_SIZE="$var_disk"
+  CORE_COUNT="$var_cpu"
+  RAM_SIZE="$var_ram"
+  BRG="vmbr0"
+  NET="dhcp"
+  GATE=""
+  echo -e "${BL}[Info]${CL} Creating LXC Container..."
+}
+
+# Start script function
+start_script() {
+  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "SETTINGS" --yesno "Use Default Settings?" --no-button Advanced 10 58); then
+    header_info
+    echo -e "${BL}[Info]${CL} Using Default Settings"
+    default_settings
+  else
+    header_info
+    echo -e "${BL}[Info]${CL} Using Advanced Settings"
+    advanced_settings
+  fi
+}
+
+# Exit script function
+exit-script() {
+  clear
+  echo -e "⚠ User exited script \n"
+  exit
+}
+
+# Build container function
+build_container() {
+  STORAGE_TYPE=$(pvesm status -storage $STORAGE | awk 'NR>1 {print $2}')
+  case $STORAGE_TYPE in
+  nfs|cifs )
+      echo -e "${CROSS} ${RD}ERROR: NFS and CIFS storage is not supported${CL}"
+      exit
+  ;;
+  esac
+  if [ "$STORAGE_TYPE" == "zfspool" ]; then
+    DISK_EXT=".subvol"
+    DISK_REF="$STORAGE:$DISK_SIZE"
+    DISK_IMPORT="-$DISK_EXT"
+    DISK_FMT=""
+  elif [ "$STORAGE_TYPE" == "lvm" ]; then
+    DISK_EXT=".raw"
+    DISK_REF="$STORAGE:$DISK_SIZE"
+    DISK_IMPORT=""
+    DISK_FMT=",format=raw"
+  elif [ "$STORAGE_TYPE" == "rbd" ]; then
+    DISK_EXT=".raw"
+    DISK_REF="$STORAGE:$DISK_SIZE"
+    DISK_IMPORT=""
+    DISK_FMT=",format=raw"
+  else
+    DISK_EXT=".raw"
+    DISK_REF="$STORAGE:$DISK_SIZE"
+    DISK_IMPORT=""
+    DISK_FMT=",format=raw"
+  fi
+
+  pct create $CT_ID $var_template \
+    -arch $(dpkg --print-architecture) \
+    -cmode shell \
+    -console 1 \
+    -features $PCT_FEATURES \
+    -hostname $HN \
+    -net0 name=eth0,bridge=$BRG,hwaddr=$MAC$VLAN$NET \
+    -onboot 1 \
+    -cores $CORE_COUNT \
+    -memory $RAM_SIZE \
+    -unprivileged $PCT_UNPRIVILEGED \
+    -ostype $var_os \
+    -rootfs $DISK_REF$DISK_FMT \
+    -storage $STORAGE \
+    -tags "ansible,rocky" >/dev/null
+  
+  LXC_CONFIG=/etc/pve/lxc/${CT_ID}.conf
+  if [ "$PCT_UNPRIVILEGED" == "0" ]; then
+    cat <<EOF >>$LXC_CONFIG
+lxc.cgroup2.devices.allow: a
+lxc.cap.drop:
+lxc.mount.auto: "proc:rw sys:rw"
+EOF
+  fi
+}
+
+# Template check
+TEMPLATE_VER="rockylinux-9"
+template_check() {
+  if [ ! -f "/var/lib/vz/template/cache/${TEMPLATE_VER}-default_20231016_amd64.tar.xz" ]; then
+    msg_info "Downloading LXC Template"
+    pveam download local ${TEMPLATE_VER}-default_20231016_amd64.tar.xz >/dev/null 2>&1 ||
+    {
+      msg_error "A problem occurred while downloading the LXC template."
+      exit 1
+    }
+    msg_ok "Downloaded LXC Template"
+  fi
+  var_template="local:vztmpl/${TEMPLATE_VER}-default_20231016_amd64.tar.xz"
+  var_os="centos"
+}
+
+# Check if running on Proxmox
+arch_check() {
+  if [ "$(dpkg --print-architecture)" != "amd64" ]; then
+    echo -e "\n $CROSS This script will not work with PiMOS! \n"
+    echo -e "Exiting..."
+    sleep 2
+    exit
+  fi
+}
+
+pve_check() {
+  if [ $(pveversion | grep "pve-manager/8" | wc -l) -ne 1 ]; then
+    echo -e "${CROSS} This script requires Proxmox Virtual Environment 8.0 or greater"
+    echo -e "Exiting..."
+    sleep 2
+    exit
+  fi
+}
+
+# SSH setup function
+ssh_check() {
+  if command -v pveversion >/dev/null 2>&1; then
+    if [ -n "${SSH_CLIENT:+x}" ]; then
+      if whiptail --backtitle "Proxmox VE Helper Scripts" --defaultno --title "SSH DETECTED" --yesno "It's suggested to use the Proxmox shell instead of SSH, since SSH can create issues while gathering variables. Would you like to proceed with using SSH?" 10 62; then
+        echo "you've been warned"
+      else
+        clear
+        exit
+      fi
+    fi
+  fi
+}
