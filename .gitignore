@@ -1,0 +1,43 @@
+# Logs
+*.log
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Credentials and secrets
+*.key
+*.pem
+*.crt
+*password*
+*secret*
+*credential*
+
+# Local configuration
+local.env
+.env.local
+
+# Test files
+test_*
+*_test.sh
