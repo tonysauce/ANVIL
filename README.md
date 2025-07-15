@@ -35,6 +35,14 @@ This script automates the deployment of a complete Ansible infrastructure server
 - Zero Trust continuous verification
 - Automated compliance assessments
 
+### 🎣 **Code Quality & Security (Husky Git Hooks)**
+- **Pre-commit security scanning** - Blocks secrets, validates scripts
+- **Commit message validation** - Enforces quality standards
+- **Pre-push final validation** - Comprehensive security checks
+- **Infrastructure validation** - Configuration and permissions
+- **Automated code quality** - Shellcheck integration
+- **Security best practices** - Prevents common vulnerabilities
+
 ## Quick Start
 
 ### Prerequisites
@@ -339,9 +347,61 @@ Daily backups are automatically configured:
 vzdump <container-id> --mode stop --compress gzip
 ```
 
+## Development Workflow
+
+### 🔧 **Setting Up Development Environment**
+
+```bash
+# Clone the repository
+git clone https://github.com/tonysauce/ansible-lxc-deploy.git
+cd ansible-lxc-deploy
+
+# Install dependencies (sets up Husky Git hooks)
+npm install
+
+# Validate your setup
+npm run validate
+```
+
+### 🎣 **Git Hooks (Husky)**
+
+This repository uses automated Git hooks for code quality and security:
+
+- **Pre-commit**: Scans for secrets, validates shell scripts, checks permissions
+- **Commit-msg**: Validates commit message format and quality
+- **Pre-push**: Final security validation and infrastructure checks
+
+```bash
+# Run security checks manually
+npm run security-check
+
+# Test all scripts
+npm run test
+
+# Lint shell scripts (requires shellcheck)
+npm run lint
+```
+
+**See [HUSKY-HOOKS.md](HUSKY-HOOKS.md) for detailed documentation.**
+
+### 📝 **Commit Message Format**
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Examples:**
+- `feat(security): add Zero Trust architecture`
+- `fix(ansible): resolve container timeout issue`
+- `docs(readme): update installation guide`
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions are welcome! Please follow the development workflow above and ensure all Git hooks pass before submitting pull requests.
 
 ## License
 

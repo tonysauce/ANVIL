@@ -1,0 +1,39 @@
+{
+  "name": "ansible-lxc-deploy",
+  "version": "1.0.0",
+  "description": "🚀 **Infrastructure as Code deployment script for creating an Ansible server on ProxMox using Rocky Linux 9**",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky",
+    "test": "echo \"Running infrastructure tests...\" && bash -n ansible-lxc.sh && bash -n security-hardening-2025.sh",
+    "lint": "echo \"Running shellcheck...\" && find . -name '*.sh' -exec shellcheck {} + || echo 'Install shellcheck for better linting'",
+    "security-check": "echo \"Running security checks...\" && .husky/pre-commit",
+    "validate": "npm run test && npm run lint && npm run security-check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonysauce/ansible-lxc-deploy.git"
+  },
+  "keywords": [
+    "ansible",
+    "infrastructure",
+    "proxmox",
+    "lxc",
+    "security",
+    "automation",
+    "rocky-linux",
+    "zero-trust",
+    "compliance",
+    "devops"
+  ],
+  "author": "tonysauce",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tonysauce/ansible-lxc-deploy/issues"
+  },
+  "homepage": "https://github.com/tonysauce/ansible-lxc-deploy#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2"
+  }
+}

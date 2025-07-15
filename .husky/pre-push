@@ -1,0 +1,299 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Pre-Push Security and Quality Checks
+# Final validation before code reaches remote repository
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to check branch protection
+check_branch_protection() {
+    local branch=$(git branch --show-current)
+    
+    print_info "Checking branch protection for '$branch'..."
+    
+    # Prevent direct pushes to main/master
+    if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+        # Allow if explicitly confirmed
+        if [ "$HUSKY_SKIP_BRANCH_PROTECTION" = "true" ]; then
+            print_warning "Branch protection bypassed via HUSKY_SKIP_BRANCH_PROTECTION"
+            return 0
+        fi
+        
+        print_warning "⚠️  Pushing directly to '$branch' branch"
+        echo ""
+        print_info "For better security, consider:"
+        print_info "1. Creating a feature branch: git checkout -b feature/your-feature"
+        print_info "2. Using pull requests for code review"
+        echo ""
+        printf "Continue with direct push to $branch? (y/N): "
+        read -r response
+        case $response in
+            [yY][eE][sS]|[yY])
+                print_warning "Proceeding with direct push..."
+                return 0
+                ;;
+            *)
+                print_error "Push cancelled for branch protection"
+                return 1
+                ;;
+        esac
+    fi
+    
+    print_success "✅ Branch check passed"
+    return 0
+}
+
+# Function to validate infrastructure configuration
+check_infrastructure_config() {
+    print_info "Validating infrastructure configuration..."
+    
+    local config_errors=0
+    
+    # Check for required files
+    required_files=(
+        "README.md"
+        "LICENSE"
+        ".gitignore"
+    )
+    
+    for file in "${required_files[@]}"; do
+        if [ ! -f "$file" ]; then
+            print_error "❌ Required file missing: $file"
+            config_errors=1
+        fi
+    done
+    
+    # Check executable permissions on scripts
+    if find . -name "*.sh" -type f ! -executable | grep -q .; then
+        print_error "❌ Some shell scripts are not executable:"
+        find . -name "*.sh" -type f ! -executable
+        config_errors=1
+    fi
+    
+    # Validate JSON files if any exist
+    json_files=$(find . -name "*.json" -type f)
+    if [ -n "$json_files" ]; then
+        for json_file in $json_files; do
+            if ! python3 -m json.tool "$json_file" > /dev/null 2>&1; then
+                print_error "❌ Invalid JSON syntax in $json_file"
+                config_errors=1
+            fi
+        done
+    fi
+    
+    if [ $config_errors -eq 1 ]; then
+        print_error "❌ Infrastructure configuration validation failed!"
+        return 1
+    fi
+    
+    print_success "✅ Infrastructure configuration validated"
+    return 0
+}
+
+# Function to check security posture
+check_security_posture() {
+    print_info "Running security posture validation..."
+    
+    # Check for security documentation
+    security_docs=(
+        "SECURITY-COMPLIANCE.md"
+        "SECURITY-2025-STANDARDS.md"
+    )
+    
+    missing_docs=0
+    for doc in "${security_docs[@]}"; do
+        if [ ! -f "$doc" ]; then
+            print_warning "⚠️  Security documentation missing: $doc"
+            missing_docs=1
+        fi
+    done
+    
+    # Check for security hardening scripts
+    if [ ! -f "security-hardening.sh" ] && [ ! -f "security-hardening-2025.sh" ]; then
+        print_warning "⚠️  No security hardening scripts found"
+    fi
+    
+    # Scan for common security anti-patterns
+    security_issues=0
+    
+    # Check for hardcoded credentials in all files
+    if git ls-files | xargs grep -l -i "password\s*=" | head -5; then
+        print_warning "⚠️  Files contain 'password=' patterns - review for hardcoded credentials"
+    fi
+    
+    # Check for HTTP URLs (should prefer HTTPS)
+    if git ls-files | xargs grep -l "http://" | grep -v "localhost\|127.0.0.1\|example.com" | head -3; then
+        print_warning "⚠️  Files contain HTTP URLs - consider using HTTPS"
+    fi
+    
+    print_success "✅ Security posture check completed"
+    return 0
+}
+
+# Function to check commit history quality
+check_commit_history() {
+    print_info "Analyzing commit history quality..."
+    
+    # Get commits that will be pushed
+    local remote_branch="origin/$(git branch --show-current)"
+    local commits_to_push
+    
+    if git rev-parse --verify "$remote_branch" >/dev/null 2>&1; then
+        commits_to_push=$(git rev-list --count "$remote_branch..HEAD")
+    else
+        commits_to_push=$(git rev-list --count HEAD)
+    fi
+    
+    if [ "$commits_to_push" -eq 0 ]; then
+        print_info "No new commits to push"
+        return 0
+    fi
+    
+    print_info "Found $commits_to_push commits to push"
+    
+    # Check for fixup commits that should be squashed
+    if git log --oneline "HEAD~$commits_to_push..HEAD" | grep -q "fixup!\|squash!"; then
+        print_warning "⚠️  Found fixup/squash commits - consider rebasing first"
+        print_info "Run: git rebase -i HEAD~$commits_to_push"
+    fi
+    
+    # Check for very large commits (potential for breaking down)
+    large_commits=$(git log --oneline --numstat "HEAD~$commits_to_push..HEAD" | awk 'NF==3 && ($1+$2>500) {print "Large commit detected"}' | wc -l)
+    if [ "$large_commits" -gt 0 ]; then
+        print_warning "⚠️  Found $large_commits commits with >500 line changes"
+        print_info "Consider breaking down large commits for better review"
+    fi
+    
+    print_success "✅ Commit history analysis completed"
+    return 0
+}
+
+# Function to run final tests
+run_final_tests() {
+    print_info "Running final pre-push tests..."
+    
+    # Test that main scripts have basic syntax validation
+    scripts_to_test=(
+        "ansible-lxc.sh"
+        "ansible-rocky-lxc-deploy.sh"
+        "security-hardening.sh"
+        "security-hardening-2025.sh"
+    )
+    
+    test_failures=0
+    
+    for script in "${scripts_to_test[@]}"; do
+        if [ -f "$script" ]; then
+            print_info "Testing syntax of $script..."
+            if ! bash -n "$script"; then
+                print_error "❌ Syntax error in $script"
+                test_failures=1
+            fi
+        fi
+    done
+    
+    if [ $test_failures -eq 1 ]; then
+        print_error "❌ Script syntax tests failed!"
+        return 1
+    fi
+    
+    print_success "✅ All syntax tests passed"
+    return 0
+}
+
+# Function to display push summary
+display_push_summary() {
+    local branch=$(git branch --show-current)
+    local remote_branch="origin/$branch"
+    
+    echo ""
+    echo "📊 Push Summary"
+    echo "==============="
+    
+    if git rev-parse --verify "$remote_branch" >/dev/null 2>&1; then
+        local commits_ahead=$(git rev-list --count "$remote_branch..HEAD")
+        local commits_behind=$(git rev-list --count "HEAD..$remote_branch")
+        
+        echo "Branch: $branch"
+        echo "Commits ahead: $commits_ahead"
+        echo "Commits behind: $commits_behind"
+        
+        if [ "$commits_ahead" -gt 0 ]; then
+            echo ""
+            echo "Commits to be pushed:"
+            git log --oneline "$remote_branch..HEAD"
+        fi
+    else
+        echo "Branch: $branch (new branch)"
+        echo "Total commits: $(git rev-list --count HEAD)"
+    fi
+    
+    echo ""
+}
+
+main() {
+    echo ""
+    echo "🚀 Pre-Push Security & Quality Validation"
+    echo "=========================================="
+    
+    # Run all checks
+    local exit_code=0
+    
+    check_branch_protection || exit_code=1
+    echo ""
+    
+    check_infrastructure_config || exit_code=1
+    echo ""
+    
+    check_security_posture || exit_code=1
+    echo ""
+    
+    check_commit_history || exit_code=1
+    echo ""
+    
+    run_final_tests || exit_code=1
+    echo ""
+    
+    display_push_summary
+    
+    if [ $exit_code -eq 0 ]; then
+        print_success "🎉 All pre-push checks passed!"
+        echo ""
+        print_info "Ready to push to remote repository..."
+    else
+        print_error "💥 Pre-push validation failed!"
+        echo ""
+        print_error "Please fix the issues above before pushing."
+        print_info "You can bypass these checks with: git push --no-verify"
+        print_warning "However, this is NOT recommended for security reasons."
+    fi
+    
+    echo ""
+    
+    return $exit_code
+}
+
+# Run main function
+main "$@"
