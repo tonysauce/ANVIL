@@ -34,7 +34,7 @@ check_branch_protection() {
     print_info "Checking branch protection for '$branch'..."
     
     # Prevent direct pushes to main/master
-    if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+    if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
         # Allow if explicitly confirmed
         if [ "$HUSKY_SKIP_BRANCH_PROTECTION" = "true" ]; then
             print_warning "Branch protection bypassed via HUSKY_SKIP_BRANCH_PROTECTION"
@@ -52,7 +52,7 @@ check_branch_protection() {
             printf "Continue with direct push to $branch? (y/N): "
             read -r response
             case $response in
-                [yY][eE][sS]|[yY])
+                [yY]|[yY][eE][sS])
                     print_warning "Proceeding with direct push..."
                     return 0
                     ;;
@@ -134,12 +134,14 @@ check_security_posture() {
     security_issues=0
     
     # Check for hardcoded credentials in all files
-    if git ls-files | xargs grep -l -i "password\s*=" | head -5; then
+    credential_files=$(git ls-files | xargs grep -l -i "password\s*=" 2>/dev/null | head -5)
+    if [ -n "$credential_files" ]; then
         print_warning "⚠️  Files contain 'password=' patterns - review for hardcoded credentials"
     fi
     
     # Check for HTTP URLs (should prefer HTTPS)
-    if git ls-files | xargs grep -l "http://" | grep -v "localhost\|127.0.0.1\|example.com" | head -3; then
+    http_files=$(git ls-files | xargs grep -l "http://" 2>/dev/null | grep -v -E "localhost|127.0.0.1|example.com" | head -3)
+    if [ -n "$http_files" ]; then
         print_warning "⚠️  Files contain HTTP URLs - consider using HTTPS"
     fi
     
@@ -169,7 +171,7 @@ check_commit_history() {
     print_info "Found $commits_to_push commits to push"
     
     # Check for fixup commits that should be squashed
-    if git log --oneline "HEAD~$commits_to_push..HEAD" | grep -q "fixup!\|squash!"; then
+    if git log --oneline "HEAD~$commits_to_push..HEAD" | grep -q -E "fixup!|squash!"; then
         print_warning "⚠️  Found fixup/squash commits - consider rebasing first"
         print_info "Run: git rebase -i HEAD~$commits_to_push"
     fi
