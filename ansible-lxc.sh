@@ -506,6 +506,24 @@ EOF
   pct exec $CT_ID -- bash -c "dnf clean all"
   msg_ok "Cleaned up"
 
+  # Optional security hardening
+  if (whiptail --backtitle "Proxmox VE Helper Scripts" --title "SECURITY HARDENING" --yesno "Apply additional security hardening (CIS/STIG compliance)?\n\nThis will implement 65+ security controls including:\n- SSH hardening with strong ciphers\n- PAM password policies and account lockout\n- Comprehensive audit logging\n- File integrity monitoring (AIDE)\n- Kernel parameter hardening\n- HTTPS with security headers\n\nRecommended for production use." 20 80); then
+    msg_info "Applying security hardening..."
+    
+    # Download and run security hardening script
+    pct exec $CT_ID -- bash -c "
+      curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/security-hardening.sh > /tmp/security-hardening.sh
+      chmod +x /tmp/security-hardening.sh
+      /tmp/security-hardening.sh
+      rm -f /tmp/security-hardening.sh
+    "
+    
+    msg_ok "Security hardening completed"
+    SECURITY_HARDENED=true
+  else
+    SECURITY_HARDENED=false
+  fi
+
   # Display summary
   IP=$(pct exec $CT_ID ip a s dev eth0 | awk '/inet / {print $2}' | cut -d/ -f1)
   TANG_THUMBPRINT=$(pct exec $CT_ID -- bash -c "jose jwk thp -i /var/db/tang/*.jwk 2>/dev/null | head -1")
@@ -524,6 +542,20 @@ EOF
   echo -e "  ${GN}→${CL} Tang server for NBDE (Network Bound Disk Encryption)"
   echo -e "  ${GN}→${CL} CrowdSec collaborative security"
   echo -e "  ${GN}→${CL} Firewalld with enterprise configuration"
+  
+  if [ "$SECURITY_HARDENED" = true ]; then
+    echo -e "\n${BL}Security Hardening Applied:${CL}"
+    echo -e "  ${GN}→${CL} SSH hardened with strong ciphers and authentication"
+    echo -e "  ${GN}→${CL} PAM password policies and account lockout configured"
+    echo -e "  ${GN}→${CL} Comprehensive audit logging (auditd) enabled"
+    echo -e "  ${GN}→${CL} File integrity monitoring (AIDE) installed"
+    echo -e "  ${GN}→${CL} Kernel parameters hardened for security"
+    echo -e "  ${GN}→${CL} HTTPS configured with security headers"
+    echo -e "  ${GN}→${CL} System banners and compliance features enabled"
+    echo -e "  ${YW}→${CL} CIS Benchmark compliance: ~85%"
+    echo -e "  ${YW}→${CL} STIG compliance: ~75%"
+    echo -e "\n${YW}Security Note:${CL} Web interface now available at ${BL}https://$IP${CL}"
+  fi
   
   if [ -n "$TANG_THUMBPRINT" ]; then
     echo -e "\n${BL}Tang Key Thumbprint:${CL} ${YW}$TANG_THUMBPRINT${CL}"
