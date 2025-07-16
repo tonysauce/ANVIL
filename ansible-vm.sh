@@ -128,7 +128,7 @@ function default_settings() {
   START_VM="yes"
   MACHINE="q35"
   CACHE=""
-  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso"
+  ISO_URL="https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso"
   ISO_PATH=""
   STORAGE="local-lvm"
   BOOT_ORDER="scsi0"
@@ -376,8 +376,8 @@ function update_script() {
 function check_iso() {
   msg_info "Checking for Rocky Linux ISO"
   
-  # First check for exact expected file in local storage
-  ISO_FILE="rocky-9.6-x86_64-minimal.iso"
+  # First check for exact expected file in local storage  
+  ISO_FILE="rocky-9.6-x86_64-dvd.iso"
   if pvesm list local --content iso 2>/dev/null | grep -q "local:iso/$ISO_FILE"; then
     local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $4}')
     if [ "$iso_size" != "0" ] && [ -n "$iso_size" ]; then
@@ -435,18 +435,18 @@ function show_manual_iso_instructions() {
   echo -e "  1. Open ProxMox web interface"
   echo -e "  2. Go to: Datacenter > Storage > local > ISO Images"
   echo -e "  3. Click 'Download from URL'"
-  echo -e "  4. URL: ${GN}https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso${CL}"
+  echo -e "  4. URL: ${GN}https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso${CL}"
   echo -e "  5. Wait for download to complete"
   echo ""
   echo -e "${BL}Option 2: Command Line Download${CL}"
   echo -e "  ${GN}cd /var/lib/vz/template/iso/${CL}"
-  echo -e "  ${GN}wget https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-minimal.iso${CL}"
+  echo -e "  ${GN}wget https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso${CL}"
   echo ""
   echo -e "${BL}Option 3: Manual Upload (Air-Gapped Environments)${CL}"
   echo -e "  1. Download ISO on internet-connected machine"
   echo -e "  2. Transfer to ProxMox host via SCP/USB/etc."
   echo -e "  3. Place in: ${GN}/var/lib/vz/template/iso/${CL}"
-  echo -e "  4. Ensure filename: ${GN}rocky-9.6-x86_64-minimal.iso${CL}"
+  echo -e "  4. Ensure filename: ${GN}rocky-9.6-x86_64-dvd.iso${CL}"
   echo ""
   echo -e "${YW}After obtaining the ISO, run this script again.${CL}"
   echo ""
