@@ -121,8 +121,10 @@ function default_settings() {
   ISO_PATH=""
   STORAGE="local-lvm"
   BOOT_ORDER="scsi0"
-  BIOS="seabios"
+  BIOS="ovmf"
   CPU_TYPE="host"
+  EFI_DISK="1"
+  TPM="1"
   echo_default
 }
 
@@ -420,7 +422,7 @@ function create_vm() {
   # Check for required ISO
   check_iso
   
-  # Create the VM
+  # Create the VM with modern UEFI + vTPM configuration
   qm create $VM_ID \
     --name $HN \
     --ostype l26 \
@@ -429,6 +431,8 @@ function create_vm() {
     --cpu $CPU_TYPE \
     --machine $MACHINE \
     --bios $BIOS \
+    --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
+    --tpmstate0 $STORAGE:1,version=v2.0 \
     --scsihw virtio-scsi-pci \
     --scsi0 $STORAGE:${DISK_SIZE},format=raw \
     --ide2 $ISO_PATH,media=cdrom \
