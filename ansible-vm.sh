@@ -8,28 +8,34 @@ set -euo pipefail
 # Source build functions with error handling
 if ! source <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/build.func 2>/dev/null); then
     echo "[WARNING] Could not source build functions - using fallback functions"
-    
-    # Fallback color definitions
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    BLUE='\033[0;34m'
-    NC='\033[0m'
-    
-    # Fallback functions
-    msg_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-    msg_ok() { echo -e "${GREEN}[OK]${NC} $1"; }
-    msg_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-    
-    # Color variables for compatibility
-    DGN="${GREEN}"
-    BGN="${BLUE}"
-    CL="${NC}"
-    BL="${BLUE}"
-    YW="${YELLOW}"
-    RD="${RED}"
-    GN="${GREEN}"
 fi
+
+# Ensure all color variables are defined (fallback if not set by build.func)
+RED="${RED:-\033[0;31m}"
+GREEN="${GREEN:-\033[0;32m}"
+YELLOW="${YELLOW:-\033[1;33m}"
+BLUE="${BLUE:-\033[0;34m}"
+NC="${NC:-\033[0m}"
+
+# Ensure fallback functions exist
+if ! declare -f msg_info >/dev/null 2>&1; then
+    msg_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+fi
+if ! declare -f msg_ok >/dev/null 2>&1; then
+    msg_ok() { echo -e "${GREEN}[OK]${NC} $1"; }
+fi
+if ! declare -f msg_error >/dev/null 2>&1; then
+    msg_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+fi
+
+# Ensure all color variables used in script are defined
+DGN="${DGN:-$GREEN}"
+BGN="${BGN:-$BLUE}"
+CL="${CL:-$NC}"
+BL="${BL:-$BLUE}"
+YW="${YW:-$YELLOW}"
+RD="${RD:-$RED}"
+GN="${GN:-$GREEN}"
 
 # Basic logging function
 log_info() {
