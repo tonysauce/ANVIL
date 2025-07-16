@@ -474,7 +474,7 @@ function create_vm() {
     --scsihw virtio-scsi-pci \
     --scsi0 $STORAGE:${DISK_SIZE},format=raw \
     --ide2 $ISO_PATH,media=cdrom \
-    --boot order=scsi0 \
+    --boot order=ide2 \
     --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
     
   # Configure network
@@ -489,8 +489,8 @@ function create_vm() {
   
   msg_ok "Virtual Machine $VM_ID created successfully with UEFI + vTPM"
   
-  # Create kickstart file for automated installation
-  create_kickstart_file
+  # Provide installation guidance (manual installation)
+  msg_info "VM ready for manual Rocky Linux installation"
   
   # Start VM if requested
   if [[ "$START_VM" == "yes" ]]; then
@@ -509,138 +509,27 @@ function create_vm() {
     echo -e "${BL}Network: ${GN}$NET on $BRG${CL}"
     echo -e "${BL}Firmware: ${GN}UEFI with vTPM 2.0${CL}"
     echo ""
-    echo -e "${YW}Next Steps:${CL}"
+    echo -e "${YW}Installation Instructions:${CL}"
     echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
-    echo -e "${BL}2. Complete Rocky Linux installation${CL}"
-    echo -e "${BL}3. Run post-installation configuration${CL}"
+    echo -e "${BL}2. Select 'Install Rocky Linux 9.6'${CL}"
+    echo -e "${BL}3. Choose language and keyboard layout${CL}"
+    echo -e "${BL}4. Configure disk partitioning (automatic is fine)${CL}"
+    echo -e "${BL}5. Set root password and create user account${CL}"
+    echo -e "${BL}6. Wait for installation to complete${CL}"
     echo ""
-    echo -e "${RD}Note: After OS installation completes, run:${CL}"
+    echo -e "${YW}Recommended Settings:${CL}"
+    echo -e "${BL}• Root password: Create a strong password${CL}"
+    echo -e "${BL}• User account: Create 'ansible' user in wheel group${CL}"
+    echo -e "${BL}• Network: DHCP is pre-configured${CL}"
+    echo -e "${BL}• Services: Enable SSH for remote access${CL}"
+    echo ""
+    echo -e "${RD}After OS installation completes, run on the VM:${CL}"
     echo -e "${GN}curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/vm-post-install.sh | bash${CL}"
   fi
 }
 
-# Create kickstart file for automated installation
-function create_kickstart_file() {
-  msg_info "Creating automated installation kickstart file"
-  
-  # Generate random root password
-  ROOT_PASSWORD=$(openssl rand -base64 12)
-  ENCRYPTED_PASSWORD=$(openssl passwd -6 "$ROOT_PASSWORD")
-  
-  # Create kickstart directory
-  mkdir -p /var/lib/vz/template/iso/kickstart
-  
-  # Generate kickstart file
-  cat > /var/lib/vz/template/iso/kickstart/rocky9-ansible-vm.ks << EOF
-#version=ROCKY9
-# System authorization information
-auth --enableshadow --passalgo=sha512
-# Use CDROM installation media
-cdrom
-# Use text mode install
-text
-# Run the Setup Agent on first boot
-firstboot --enable
-ignoredisk --only-use=sda
-# Keyboard layouts
-keyboard --vckeymap=us --xlayouts='us'
-# System language
-lang en_US.UTF-8
-
-# Network information
-network --bootproto=dhcp --device=ens18 --onboot=on --ipv6=auto --activate
-network --hostname=$HN
-
-# Root password (encrypted)
-rootpw --iscrypted $ENCRYPTED_PASSWORD
-# System services
-services --enabled="chronyd,sshd,firewalld"
-# System timezone
-timezone America/New_York --isUtc
-# User creation
-user --groups=wheel --name=ansible --password=\$6\$salt\$encrypted_pass --iscrypted --gecos="Ansible User"
-# System bootloader configuration
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
-autopart --type=lvm
-# Partition clearing information
-clearpart --none --initlabel
-
-%packages
-@^minimal-environment
-@standard
-chrony
-openssh-server
-firewalld
-dnf-utils
-curl
-wget
-git
-vim
-%end
-
-%addon com_redhat_kdump --enable --reserve-mb='auto'
-%end
-
-%anaconda
-pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
-pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
-pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
-%end
-
-%post --log=/root/ks-post.log
-# Enable SSH for remote access
-systemctl enable sshd
-systemctl start sshd
-
-# Configure firewall for SSH
-firewall-cmd --permanent --add-service=ssh
-firewall-cmd --reload
-
-# Create post-installation script
-cat > /root/post-install.sh << 'SCRIPT_EOF'
-#!/bin/bash
-# Post-installation configuration script
-echo "Starting post-installation configuration..."
-
-# Download and run the full infrastructure setup
-curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/vm-post-install.sh | bash
-
-echo "Post-installation configuration complete"
-SCRIPT_EOF
-
-chmod +x /root/post-install.sh
-
-# Set up automatic execution of post-install script on first boot
-cat > /etc/systemd/system/post-install.service << 'SERVICE_EOF'
-[Unit]
-Description=Post Installation Configuration
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/root/post-install.sh
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-SERVICE_EOF
-
-systemctl enable post-install.service
-%end
-
-reboot
-EOF
-
-  # Save password for user reference
-  echo "VM_ID: $VM_ID" > /tmp/vm-$VM_ID-info.txt
-  echo "Hostname: $HN" >> /tmp/vm-$VM_ID-info.txt
-  echo "Root Password: $ROOT_PASSWORD" >> /tmp/vm-$VM_ID-info.txt
-  echo "Kickstart: /var/lib/vz/template/iso/kickstart/rocky9-ansible-vm.ks" >> /tmp/vm-$VM_ID-info.txt
-  
-  msg_ok "Kickstart file created: /var/lib/vz/template/iso/kickstart/rocky9-ansible-vm.ks"
-  msg_info "VM credentials saved to: /tmp/vm-$VM_ID-info.txt"
-  echo -e "${RD}Root Password: ${GN}$ROOT_PASSWORD${CL}"
-}
+# Manual installation - no automated kickstart needed
+# User will complete installation through ProxMox console
 
 # Check if user wants to update the script
 if [[ "${1:-}" == "update" ]]; then
