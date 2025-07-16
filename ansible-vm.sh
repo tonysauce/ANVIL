@@ -1,12 +1,35 @@
 #!/usr/bin/env bash
-# ansible-vm.sh - Rocky Linux 9 VM Deployment for ProxMox (Fixed Version)
-# Quick fix for syntax error - simplified version for immediate use
+# ansible-vm.sh - Rocky Linux 9 VM Deployment for ProxMox
+# Version: 3.0.1 - Syntax Fixed Edition
 
-# Enable basic error handling
+# Enable strict error handling
 set -euo pipefail
 
-# Source build functions
-source <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/build.func)
+# Source build functions with error handling
+if ! source <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/build.func 2>/dev/null); then
+    echo "[WARNING] Could not source build functions - using fallback functions"
+    
+    # Fallback color definitions
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+    
+    # Fallback functions
+    msg_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+    msg_ok() { echo -e "${GREEN}[OK]${NC} $1"; }
+    msg_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+    
+    # Color variables for compatibility
+    DGN="${GREEN}"
+    BGN="${BLUE}"
+    CL="${NC}"
+    BL="${BLUE}"
+    YW="${YELLOW}"
+    RD="${RED}"
+    GN="${GREEN}"
+fi
 
 # Basic logging function
 log_info() {
@@ -28,19 +51,60 @@ cat <<"EOF"
 EOF
 }
 
+# Set default application name if not defined
+NSAPP="${NSAPP:-ansible-vm}"
+
 header_info
 echo -e "Loading..."
-NSAPP=$(echo ${NSAPP,,} | tr -d ' ')
+
+# Sanitize application name
+NSAPP=$(echo "${NSAPP,,}" | tr -d ' ')
+
+# VM configuration defaults
 var_disk="32"
 var_cpu="4"
 var_ram="4096"
 var_os="rocky"
 var_version="9"
-variables
-color
-catch_errors
+
+# Initialize build functions if available
+if declare -f variables >/dev/null 2>&1; then
+    variables
+fi
+if declare -f color >/dev/null 2>&1; then
+    color
+fi
+if declare -f catch_errors >/dev/null 2>&1; then
+    catch_errors
+fi
+
+# Fallback function definitions if not loaded from build.func
+if ! declare -f ARCH_CHECK >/dev/null 2>&1; then
+    ARCH_CHECK() {
+        if [[ "$(uname -m)" != "x86_64" ]]; then
+            msg_error "This script requires x86_64 architecture"
+            exit 1
+        fi
+    }
+fi
+
+if ! declare -f PVE_CHECK >/dev/null 2>&1; then
+    PVE_CHECK() {
+        if ! command -v pveversion >/dev/null 2>&1; then
+            msg_error "This script must be run on a ProxMox host"
+            exit 1
+        fi
+    }
+fi
 
 function default_settings() {
+  # Get next available VM ID
+  if command -v pvesh >/dev/null 2>&1; then
+    NEXTID=$(pvesh get /cluster/nextid 2>/dev/null || echo "100")
+  else
+    NEXTID="100"
+  fi
+  
   VM_ID=$NEXTID
   HN=$NSAPP
   DISK_SIZE="$var_disk"
@@ -83,6 +147,7 @@ function echo_default() {
   echo -e "${DGN}Using MAC Address: ${BGN}$MAC${CL}"
   echo -e "${DGN}Using VLAN Tag: ${BGN}$VLAN${CL}"
   echo -e "${DGN}Start VM after creation: ${BGN}$START_VM${CL}"
+  echo -e "${DGN}Firmware: ${BGN}UEFI with vTPM 2.0${CL}"
   echo -e "${BL}Creating a Rocky Linux 9 Infrastructure Management VM using the above default settings${CL}"
 }
 
@@ -93,6 +158,13 @@ function exit-script() {
 }
 
 function advanced_settings() {
+  # Get next available VM ID
+  if command -v pvesh >/dev/null 2>&1; then
+    NEXTID=$(pvesh get /cluster/nextid 2>/dev/null || echo "100")
+  else
+    NEXTID="100"
+  fi
+
   if VM_ID=$(whiptail --inputbox "Set Virtual Machine ID" 8 58 $NEXTID --title "VIRTUAL MACHINE ID" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
     if [ -z "$VM_ID" ]; then
       VM_ID="$NEXTID"
@@ -164,7 +236,7 @@ function advanced_settings() {
   fi
 
   if NET=$(whiptail --inputbox "Set a Static IPv4 CIDR Address (/24)" 8 58 dhcp --title "IP ADDRESS" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $NET ]; then
+    if [ -z "$NET" ]; then
       NET="dhcp"
       echo -e "${DGN}Using IP Address: ${BGN}$NET${CL}"
     else
@@ -175,7 +247,7 @@ function advanced_settings() {
   fi
 
   if GATE1=$(whiptail --inputbox "Set a Gateway IP (mandatory if Static IP was used)" 8 58 --title "GATEWAY IP" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $GATE1 ]; then
+    if [ -z "$GATE1" ]; then
       GATE1="Default"
       GATE=""
     else
@@ -194,7 +266,7 @@ function advanced_settings() {
   echo -e "${DGN}Disable IPv6: ${BGN}$DISABLEIP6${CL}"
 
   if MTU1=$(whiptail --inputbox "Set Interface MTU Size (leave blank for default)" 8 58 --title "MTU SIZE" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $MTU1 ]; then
+    if [ -z "$MTU1" ]; then
       MTU1="Default"
       MTU=""
     else
@@ -206,7 +278,7 @@ function advanced_settings() {
   fi
 
   if SD=$(whiptail --inputbox "Set a DNS Search Domain (leave blank for HOST)" 8 58 --title "DNS Search Domain" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $SD ]; then
+    if [ -z "$SD" ]; then
       SX=Host
       SD=""
     else
@@ -219,7 +291,7 @@ function advanced_settings() {
   fi
 
   if NX=$(whiptail --inputbox "Set a DNS Server IP (leave blank for HOST)" 8 58 --title "DNS SERVER IP" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $NX ]; then
+    if [ -z "$NX" ]; then
       NX=Host
       NS=""
     else
@@ -231,7 +303,7 @@ function advanced_settings() {
   fi
 
   if MAC1=$(whiptail --inputbox "Set a MAC Address(leave blank for default)" 8 58 --title "MAC ADDRESS" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $MAC1 ]; then
+    if [ -z "$MAC1" ]; then
       MAC1="Default"
       MAC=""
     else
@@ -243,7 +315,7 @@ function advanced_settings() {
   fi
 
   if VLAN1=$(whiptail --inputbox "Set a Vlan(leave blank for default)" 8 58 --title "VLAN" --cancel-button Exit-Script 3>&1 1>&2 2>&3); then
-    if [ -z $VLAN1 ]; then
+    if [ -z "$VLAN1" ]; then
       VLAN1="Default"
       VLAN=""
     else
@@ -266,7 +338,14 @@ function advanced_settings() {
 function install_script() {
   ARCH_CHECK
   PVE_CHECK
-  NEXTID=$(pvesh get /cluster/nextid)
+  
+  # Get next available VM ID
+  if command -v pvesh >/dev/null 2>&1; then
+    NEXTID=$(pvesh get /cluster/nextid 2>/dev/null || echo "100")
+  else
+    NEXTID="100"
+  fi
+  
   header_info
   if (whiptail --title "SETTINGS" --yesno "Use Default Settings?" --no-button Advanced 10 58); then
     header_info
@@ -281,9 +360,9 @@ function install_script() {
 
 function update_script() {
   header_info
-  msg_info "Updating ${APP} Installation Script"
-  wget -qO ${APP}.sh https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh
-  msg_ok "Updated ${APP} Installation Script"
+  msg_info "Updating Installation Script"
+  wget -qO ansible-vm.sh https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh
+  msg_ok "Updated Installation Script"
   exit
 }
 
@@ -415,8 +494,7 @@ function create_vm() {
     qm start $VM_ID
     msg_ok "Virtual Machine $VM_ID started"
     
-    msg_info "Waiting for installation to complete..."
-    msg_ok "VM created and started. Connect via console for installation or use automated kickstart."
+    msg_info "VM created and started successfully"
     
     # Display connection information
     echo ""
@@ -477,8 +555,6 @@ services --enabled="chronyd,sshd,firewalld"
 timezone America/New_York --isUtc
 # User creation
 user --groups=wheel --name=ansible --password=\$6\$salt\$encrypted_pass --iscrypted --gecos="Ansible User"
-# X Window System configuration information
-xconfig --startxonboot
 # System bootloader configuration
 bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
 autopart --type=lvm
