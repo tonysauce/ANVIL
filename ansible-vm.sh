@@ -475,9 +475,7 @@ function create_vm() {
     --scsi0 $STORAGE:${DISK_SIZE},format=raw \
     --ide2 $ISO_PATH,media=cdrom \
     --boot order=scsi0 \
-    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU \
-    --serial0 socket \
-    --vga serial0
+    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
     
   # Configure network
   if [[ "$NET" != "dhcp" ]]; then
@@ -512,7 +510,7 @@ function create_vm() {
     echo -e "${BL}Firmware: ${GN}UEFI with vTPM 2.0${CL}"
     echo ""
     echo -e "${YW}Next Steps:${CL}"
-    echo -e "${BL}1. Connect to VM console: ${GN}qm terminal $VM_ID${CL}"
+    echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
     echo -e "${BL}2. Complete Rocky Linux installation${CL}"
     echo -e "${BL}3. Run post-installation configuration${CL}"
     echo ""
