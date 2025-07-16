@@ -1,10 +1,16 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Infrastructure Security Pre-Commit Hooks
+# Infrastructure Security Pre-Commit Hooks - Optimized with lint-staged
 # Ensures code quality and security before commits
 
-echo "🔍 Running pre-commit security and quality checks..."
+echo "🔍 Running optimized pre-commit security and quality checks..."
+
+# Run lint-staged for fast linting of changed files only
+echo "⚡ Running lint-staged on changed files..."
+npx lint-staged
+
+echo "🛡️ Running security checks..."
 
 # Colors for output
 RED='\033[0;31m'

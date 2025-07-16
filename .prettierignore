@@ -1,0 +1,13 @@
+# Prettier ignore file
+*.sh
+*.bash
+*.zsh
+node_modules/
+.git/
+*.log
+*.iso
+*.img
+/var/
+/tmp/
+CLAUDE.md
+build.func

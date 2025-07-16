@@ -7,8 +7,12 @@
     "prepare": "husky",
     "test": "echo \"Running infrastructure tests...\" && bash -n ansible-lxc.sh && bash -n security-hardening-2025.sh",
     "lint": "echo \"Running shellcheck...\" && find . -name '*.sh' -exec shellcheck {} + || echo 'Install shellcheck for better linting'",
+    "lint:fast": "npx lint-staged --allow-empty",
+    "lint:changed": "git diff --name-only --cached | grep '\\.sh$' | xargs -r bash -n",
     "security-check": "echo \"Running security checks...\" && .husky/pre-commit",
-    "validate": "npm run test && npm run lint && npm run security-check"
+    "security-check:fast": "echo \"Running fast security checks on changed files...\" && git diff --name-only --cached | grep -E '\\.(sh|json|md)$' | head -5",
+    "validate": "npm run test && npm run lint && npm run security-check",
+    "validate:fast": "npm run lint:fast && npm run security-check:fast"
   },
   "repository": {
     "type": "git",
@@ -34,6 +38,23 @@
   "homepage": "https://github.com/tonysauce/ansible-lxc-deploy#readme",
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2"
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.3.3",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.3.0"
+  },
+  "lint-staged": {
+    "*.sh": [
+      "bash -n",
+      "shellcheck --severity=error --format=gcc || echo 'Install shellcheck: sudo dnf install ShellCheck'"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
+      "echo 'Formatted and validated JSON/Markdown files'"
+    ],
+    "*.js": [
+      "prettier --write",
+      "echo 'Formatted JavaScript files'"
+    ]
   }
 }

@@ -1,8 +1,14 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Commit Message Validation Hook
-# Ensures commit messages follow best practices
+# Commit Message Validation Hook - Optimized with commitlint
+# Ensures commit messages follow conventional commit standards
+
+echo "🔍 Commit Message Validation"
+echo "============================"
+
+# Use commitlint for fast, standardized commit message validation
+npx commitlint --edit "$1"
 
 # Colors for output
 RED='\033[0;31m'
