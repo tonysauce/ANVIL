@@ -279,18 +279,28 @@ function update_script() {
 
 # Function to check for Rocky Linux ISO (industry standard approach)
 function check_iso() {
-  msg_info "Checking for Rocky Linux 9.6 ISO"
+  msg_info "Checking for Rocky Linux ISO"
   
-  # Check if ISO already exists
+  # First check for exact expected file in local storage
   ISO_FILE="rocky-9.6-x86_64-minimal.iso"
-  if pvesm list local --content iso | grep -q "$ISO_FILE"; then
-    # Verify the ISO has actual content (not 0 bytes)
-    local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $5}')
+  if pvesm list local --content iso 2>/dev/null | grep -q "local:iso/$ISO_FILE"; then
+    local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $4}')
     if [ "$iso_size" != "0" ] && [ -n "$iso_size" ]; then
-      msg_ok "Rocky Linux 9.6 ISO found and verified"
+      msg_ok "Rocky Linux 9.6 ISO found and verified: $iso_size bytes"
       ISO_PATH="local:iso/$ISO_FILE"
       return 0
     fi
+  fi
+  
+  # Fallback: Search for any Rocky Linux 9.x ISO in any storage
+  local found_line=""
+  found_line=$(pvesm list local --content iso 2>/dev/null | grep -i "rocky.*9.*x86_64.*minimal" | head -1)
+  if [ -n "$found_line" ]; then
+    local volid=$(echo "$found_line" | awk '{print $1}')
+    ISO_FILE=$(echo "$volid" | cut -d: -f2 | sed 's|iso/||')
+    ISO_PATH="$volid"
+    msg_ok "Found Rocky Linux 9.x ISO: $ISO_FILE"
+    return 0
   fi
   
   # ISO not found or corrupted - try auto-download first
