@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Post-commit hook to prompt for session updates
+echo ""
+echo "🔄 Checking if CLAUDE.md needs session update..."
+
+# Check if CLAUDE.md was modified in the last commit
+if git diff HEAD~1 --name-only | grep -q "CLAUDE.md"; then
+    echo "✅ CLAUDE.md was updated in this commit"
+else
+    echo ""
+    echo "💡 Consider updating session context in CLAUDE.md"
+    echo "   Run: ./update-session.sh"
+    echo ""
+fi

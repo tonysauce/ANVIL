@@ -19,11 +19,12 @@ Ansible LXC deployment project for automating container and VM deployments with 
 - `security-hardening-2025.sh` - 2025 security standards
 - `vm-post-install.sh` - Post-installation configuration
 
-## Current Session Context (July 16, 2025)
+## Current Session Context (July 18, 2025)
 - **Session Type**: Continuation from previous conversation  
 - Working directory: /home/tony/ansible-lxc-deploy
 - **Private Repository**: User accesses via `gh api` commands
 - **Git Hooks**: Comprehensive Husky-based security validation system
+- **Script Execution**: Scripts are being run on a different ProxMox server (not local machine)
 
 ## Issues Resolved This Session
 
@@ -67,16 +68,31 @@ Ansible LXC deployment project for automating container and VM deployments with 
 - ✅ **Console access**: Fixed VGA redirection for proper display
 - 🔄 **Installation**: VM 103 created, working on UEFI boot issue
 
-## Session End Status (July 16, 2025)
-- **VM 103 Created**: ansible-vm with UEFI + vTPM, proper console access
-- **Console Issue**: ✅ RESOLVED - Removed serial redirection, console works
-- **Installation Issue**: 🔄 IN PROGRESS - GRUB UEFI boot error with minimal ISO
-- **Next Steps**: Try Rocky Linux DVD ISO for better UEFI compatibility
-- **Command Ready**: `wget https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.6-x86_64-dvd.iso`
+## Session End Status (July 18, 2025)
+- **VM Creation**: 🔄 IN PROGRESS - Script not creating VMs on ProxMox server
+- **DVD ISO**: ✅ AVAILABLE - Rocky Linux 9.6 DVD ISO downloaded on ProxMox host
+- **Session Management**: ✅ IMPLEMENTED - Created update-session.sh and git hooks
+- **Issue Resolved**: ✅ Script must be executed directly on ProxMox host, not remote server
+- **Next Steps**: Test VM creation using proper ProxMox helper script pattern
 
 ## Commands to Remember
 - Check git status before making changes
 - Run security validation after modifications
+- Update session context: `./update-session.sh`
+- Fast validation: `npm run validate:fast`
+
+## ProxMox Deployment Commands
+**Execute directly on ProxMox host:**
+```bash
+# Rocky Linux VM deployment
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh)
+
+# LXC container deployment  
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)
+
+# Standalone VM deployment
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm-standalone.sh)
+```
 
 ## Build Process & Development Tools (Added July 16, 2025)
 

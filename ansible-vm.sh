@@ -45,15 +45,19 @@ log_info() {
 function header_info {
 clear
 cat <<"EOF"
-    ___              _ __    __         _    ____  ___
-   /   |  ____  ___ (_) /_  / /__      | |  / /  |/  /
-  / /| | / __ \/ __ \/ / __ \/ / _ \     | | / / /|_/ / 
- / ___ |/ / / / /_/ / / /_/ / /  __/     | |/ / /  / /  
-/_/  |_/_/ /_/\____/_/_.___/_/\___/      |___/_/  /_/   
-
-         Rocky Linux 9 VM Deployment for ProxMox
-         Infrastructure Management Platform
-         
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║    ██████╗  ██████╗  ██████╗ ██╗  ██╗██╗   ██╗    ██╗   ██╗  ║
+║    ██╔══██╗██╔═══██╗██╔════╝ ██║ ██╔╝╚██╗ ██╔╝    ██║   ██║  ║
+║    ██████╔╝██║   ██║██║      █████╔╝  ╚████╔╝     ██║   ██║  ║
+║    ██╔══██╗██║   ██║██║      ██╔═██╗   ╚██╔╝      ╚██╗ ██╔╝  ║
+║    ██║  ██║╚██████╔╝╚██████╗ ██║  ██╗   ██║        ╚████╔╝   ║
+║    ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═══╝    ║
+║                                                               ║
+║              Rocky Linux 9 VM Deployment for ProxMox         ║
+║                   Infrastructure Management Platform         ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
 EOF
 }
 
@@ -376,20 +380,21 @@ function update_script() {
 function check_iso() {
   msg_info "Checking for Rocky Linux ISO"
   
-  # First check for exact expected file in local storage  
-  ISO_FILE="rocky-9.6-x86_64-dvd.iso"
-  if pvesm list local --content iso 2>/dev/null | grep -q "local:iso/$ISO_FILE"; then
-    local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $4}')
-    if [ "$iso_size" != "0" ] && [ -n "$iso_size" ]; then
-      msg_ok "Rocky Linux 9.6 ISO found and verified: $iso_size bytes"
-      ISO_PATH="local:iso/$ISO_FILE"
-      return 0
+  # First check for exact expected file in local storage (try both cases)
+  for ISO_FILE in "Rocky-9.6-x86_64-dvd.iso" "rocky-9.6-x86_64-dvd.iso"; do
+    if pvesm list local --content iso 2>/dev/null | grep -q "local:iso/$ISO_FILE"; then
+      local iso_size=$(pvesm list local --content iso | grep "$ISO_FILE" | awk '{print $4}')
+      if [ "$iso_size" != "0" ] && [ -n "$iso_size" ]; then
+        msg_ok "Rocky Linux 9.6 ISO found and verified: $iso_size bytes"
+        ISO_PATH="local:iso/$ISO_FILE"
+        return 0
+      fi
     fi
-  fi
+  done
   
   # Fallback: Search for any Rocky Linux 9.x ISO in any storage
   local found_line=""
-  found_line=$(pvesm list local --content iso 2>/dev/null | grep -i "rocky.*9.*x86_64.*minimal" | head -1)
+  found_line=$(pvesm list local --content iso 2>/dev/null | grep -i "rocky.*9.*x86_64.*\(dvd\|minimal\)" | head -1)
   if [ -n "$found_line" ]; then
     local volid=$(echo "$found_line" | awk '{print $1}')
     ISO_FILE=$(echo "$volid" | cut -d: -f2 | sed 's|iso/||')
@@ -411,6 +416,7 @@ function check_iso() {
   msg_info "Downloading Rocky Linux 9.6 ISO (this may take several minutes)"
   cd /var/lib/vz/template/iso/
   
+  ISO_FILE="Rocky-9.6-x86_64-dvd.iso"
   if wget -q --show-progress --timeout=30 "$ISO_URL" -O "$ISO_FILE"; then
     msg_ok "Rocky Linux 9.6 ISO downloaded successfully"
     ISO_PATH="local:iso/$ISO_FILE"
