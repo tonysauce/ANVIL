@@ -1,5 +1,22 @@
 # ANVIL - Ansible Navigator & Virtual Infrastructure Lab
 
+[![GitHub release](https://img.shields.io/github/v/release/tonysauce/ANVIL?include_prereleases&label=Version)](https://github.com/tonysauce/ANVIL/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/issues)
+[![GitHub stars](https://img.shields.io/github/stars/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+[![Security: STIG](https://img.shields.io/badge/Security-DISA%20STIG-red.svg)](https://public.cyber.mil/stigs/)
+[![Compliance: NIST CSF 2.0](https://img.shields.io/badge/Compliance-NIST%20CSF%202.0-blue.svg)](https://www.nist.gov/cyberframework)
+[![Standard: CIS v8.1](https://img.shields.io/badge/Standard-CIS%20v8.1-green.svg)](https://www.cisecurity.org/controls)
+[![Framework: Zero Trust](https://img.shields.io/badge/Framework-Zero%20Trust-purple.svg)](https://www.nist.gov/publications/zero-trust-architecture)
+[![Security: SLSA L2](https://img.shields.io/badge/SLSA-Level%202-orange.svg)](https://slsa.dev/)
+
+[![Platform: ProxMox VE](https://img.shields.io/badge/Platform-ProxMox%20VE-lightblue.svg)](https://www.proxmox.com/en/proxmox-ve)
+[![OS: Rocky Linux 9](https://img.shields.io/badge/OS-Rocky%20Linux%209-darkgreen.svg)](https://rockylinux.org/)
+[![Stack: Cockpit+Ansible+Tang+Nginx](https://img.shields.io/badge/Stack-CATN-brightgreen.svg)](https://github.com/tonysauce/ANVIL)
+[![Status: Beta](https://img.shields.io/badge/Status-Beta-yellow.svg)](https://github.com/tonysauce/ANVIL)
+
 > **⚠️ WORK IN PROGRESS ⚠️**  
 > **This project is currently under active development and testing. While functional, it should be considered BETA software.**  
 > **Use in production environments at your own risk. Contributions and feedback welcome!**
