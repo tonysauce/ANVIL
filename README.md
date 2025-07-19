@@ -1,5 +1,9 @@
 # ANVIL - Ansible Navigator & Virtual Infrastructure Lab
 
+> **⚠️ WORK IN PROGRESS ⚠️**  
+> **This project is currently under active development and testing. While functional, it should be considered BETA software.**  
+> **Use in production environments at your own risk. Contributions and feedback welcome!**
+
 🚀 **ANVIL Infrastructure Management Platform - Complete automation suite for ProxMox deployments**
 
 ANVIL automates the deployment of enterprise-grade infrastructure management platforms with comprehensive security hardening, featuring Ansible automation, web management interfaces, and advanced encryption capabilities for modern data centers.

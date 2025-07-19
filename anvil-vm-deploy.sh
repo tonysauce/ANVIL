@@ -58,6 +58,8 @@ cat <<"EOF"
 ║           Rocky Linux Infrastructure Management VM           ║
 ║                 Cockpit • Ansible • Tang • Nginx            ║
 ║                                                               ║
+║              ⚠️  WORK IN PROGRESS - BETA SOFTWARE ⚠️           ║
+║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
 }

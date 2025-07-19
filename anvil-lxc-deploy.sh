@@ -20,6 +20,8 @@ cat <<"EOF"
 ║              Rocky Linux 9 LXC Container Deploy              ║
 ║                 Cockpit • Ansible • Tang • Nginx            ║
 ║                                                               ║
+║              ⚠️  WORK IN PROGRESS - BETA SOFTWARE ⚠️           ║
+║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
 }
