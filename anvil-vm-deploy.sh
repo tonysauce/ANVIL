@@ -501,7 +501,7 @@ function create_vm() {
   # Set kickstart arguments if using automated installation
   if [[ "$USE_KICKSTART" == "yes" ]]; then
     msg_info "Configuring automated kickstart installation"
-    qm set $VM_ID --args "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg inst.gpt"
+    qm set $VM_ID --args 'inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg'
     msg_ok "Kickstart configuration applied"
   fi
     
