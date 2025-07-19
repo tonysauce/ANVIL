@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Security Test Suite for Ansible LXC Deploy
+# Security Test Suite for ANVIL Infrastructure Lab
 # Version: 1.0.0 - 2025 Edition
 # Comprehensive security testing and validation framework
 
@@ -79,35 +79,35 @@ test_script_security() {
     
     # Test 1: Check for dangerous commands
     run_test "No dangerous commands (eval, exec without validation)" \
-        "! grep -q 'eval.*\$' ansible-vm.sh && ! grep -q 'exec.*\$' ansible-vm.sh"
+        "! grep -q 'eval.*\$' anvil-vm-deploy.sh && ! grep -q 'exec.*\$' anvil-vm-deploy.sh"
     
     # Test 2: Check for secure file permissions
     run_test "Script has secure permissions" \
-        "[[ \$(stat -c '%a' ansible-vm.sh) == '755' ]]"
+        "[[ \$(stat -c '%a' anvil-vm-deploy.sh) == '755' ]]"
     
     # Test 3: Check for proper error handling
     run_test "Error handling enabled (set -e)" \
-        "grep -q 'set.*-e' ansible-vm.sh"
+        "grep -q 'set.*-e' anvil-vm-deploy.sh"
     
     # Test 4: Check for undefined variable protection
     run_test "Undefined variable protection (set -u)" \
-        "grep -q 'set.*-u' ansible-vm.sh"
+        "grep -q 'set.*-u' anvil-vm-deploy.sh"
     
     # Test 5: Check for secure IFS
     run_test "Secure IFS configuration" \
-        "grep -q \"IFS=\" ansible-vm.sh"
+        "grep -q \"IFS=\" anvil-vm-deploy.sh"
     
     # Test 6: Check for input validation functions
     run_test "Input validation functions present" \
-        "grep -q 'validate_vmid' ansible-vm.sh && grep -q 'validate_hostname' ansible-vm.sh"
+        "grep -q 'validate_vmid' anvil-vm-deploy.sh && grep -q 'validate_hostname' anvil-vm-deploy.sh"
     
     # Test 7: Check for logging functions
     run_test "Security logging functions present" \
-        "grep -q 'log_security' ansible-vm.sh"
+        "grep -q 'log_security' anvil-vm-deploy.sh"
     
     # Test 8: Check for sensitive data sanitization
     run_test "Password sanitization in logs" \
-        "grep -q 'password=.*REDACTED' ansible-vm.sh"
+        "grep -q 'password=.*REDACTED' anvil-vm-deploy.sh"
 }
 
 test_proxmox_security() {
@@ -139,23 +139,23 @@ test_vm_security_config() {
     
     # Test 1: UEFI enforcement
     run_test "UEFI firmware enforced" \
-        "grep -q 'BIOS=\"ovmf\"' ansible-vm.sh"
+        "grep -q 'BIOS=\"ovmf\"' anvil-vm-deploy.sh"
     
     # Test 2: Modern machine type
     run_test "Modern machine type (q35)" \
-        "grep -q 'MACHINE=\"q35\"' ansible-vm.sh"
+        "grep -q 'MACHINE=\"q35\"' anvil-vm-deploy.sh"
     
     # Test 3: EFI disk configuration
     run_test "EFI disk configuration present" \
-        "grep -q 'efidisk0' ansible-vm.sh"
+        "grep -q 'efidisk0' anvil-vm-deploy.sh"
     
     # Test 4: TPM configuration
     run_test "vTPM configuration present" \
-        "grep -q 'tpmstate0' ansible-vm.sh"
+        "grep -q 'tpmstate0' anvil-vm-deploy.sh"
     
     # Test 5: Secure boot configuration
     run_test "Pre-enrolled keys for secure boot" \
-        "grep -q 'pre-enrolled-keys=1' ansible-vm.sh"
+        "grep -q 'pre-enrolled-keys=1' anvil-vm-deploy.sh"
 }
 
 test_iso_security() {
@@ -163,19 +163,19 @@ test_iso_security() {
     
     # Test 1: HTTPS URL for ISO download
     run_test "ISO download uses HTTPS" \
-        "grep 'ISO_URL=' ansible-vm.sh | grep -q 'https://'"
+        "grep 'ISO_URL=' anvil-vm-deploy.sh | grep -q 'https://'"
     
     # Test 2: ISO validation function exists
     run_test "ISO validation function present" \
-        "grep -q 'check_iso' ansible-vm.sh"
+        "grep -q 'check_iso' anvil-vm-deploy.sh"
     
     # Test 3: ISO size verification
     run_test "ISO size verification implemented" \
-        "grep -q 'iso_size' ansible-vm.sh"
+        "grep -q 'iso_size' anvil-vm-deploy.sh"
     
     # Test 4: Secure ISO path handling
     run_test "ISO path validation present" \
-        "grep -q 'ISO_PATH=' ansible-vm.sh"
+        "grep -q 'ISO_PATH=' anvil-vm-deploy.sh"
 }
 
 test_network_security() {
@@ -183,19 +183,19 @@ test_network_security() {
     
     # Test 1: IP address validation
     run_test "IP address validation function" \
-        "grep -q 'validate_ip_address' ansible-vm.sh"
+        "grep -q 'validate_ip_address' anvil-vm-deploy.sh"
     
     # Test 2: Bridge validation
     run_test "Bridge validation function" \
-        "grep -q 'validate_bridge' ansible-vm.sh"
+        "grep -q 'validate_bridge' anvil-vm-deploy.sh"
     
     # Test 3: Private IP range checking
     run_test "Private IP range validation" \
-        "grep -q 'first_octet.*second_octet' ansible-vm.sh"
+        "grep -q 'first_octet.*second_octet' anvil-vm-deploy.sh"
     
     # Test 4: Network interface security
     run_test "VirtIO network driver (secure)" \
-        "grep -q 'virtio,bridge' ansible-vm.sh"
+        "grep -q 'virtio,bridge' anvil-vm-deploy.sh"
 }
 
 test_compliance_framework() {
@@ -211,7 +211,7 @@ test_compliance_framework() {
     
     # Test 3: Check for compliance reporting
     run_test "Compliance framework mentioned in scripts" \
-        "grep -q 'COMPLIANCE_FRAMEWORKS' ansible-vm.sh"
+        "grep -q 'COMPLIANCE_FRAMEWORKS' anvil-vm-deploy.sh"
     
     # Test 4: NIST CSF 2.0 compliance
     run_test "NIST CSF 2.0 compliance references" \
@@ -236,7 +236,7 @@ test_input_validation() {
     # Create temporary test script to validate functions
     cat > "$TEST_RESULTS_DIR/test_validation.sh" << 'EOF'
 #!/bin/bash
-source ansible-vm.sh
+source anvil-vm-deploy.sh
 
 # Test VM ID validation
 validate_vmid "100" && echo "PASS: Valid VM ID 100"
@@ -268,7 +268,7 @@ EOF
     chmod +x "$TEST_RESULTS_DIR/test_validation.sh"
     
     # Run validation tests
-    if cd "$(dirname "$PWD/ansible-vm.sh")" && "$TEST_RESULTS_DIR/test_validation.sh" > "$TEST_RESULTS_DIR/validation_results.txt" 2>&1; then
+    if cd "$(dirname "$PWD/anvil-vm-deploy.sh")" && "$TEST_RESULTS_DIR/test_validation.sh" > "$TEST_RESULTS_DIR/validation_results.txt" 2>&1; then
         local passed_validations
         passed_validations=$(grep -c "PASS:" "$TEST_RESULTS_DIR/validation_results.txt" 2>/dev/null || echo "0")
         
@@ -287,19 +287,19 @@ test_security_logging() {
     
     # Test 1: Security logging functions defined
     run_test "Security logging function defined" \
-        "grep -q 'log_security()' ansible-vm.sh"
+        "grep -q 'log_security()' anvil-vm-deploy.sh"
     
     # Test 2: Audit logging to syslog
     run_test "Syslog integration present" \
-        "grep -q 'logger.*auth' ansible-vm.sh"
+        "grep -q 'logger.*auth' anvil-vm-deploy.sh"
     
     # Test 3: Log file creation
     run_test "Log file management present" \
-        "grep -q 'LOG_FILE=' ansible-vm.sh"
+        "grep -q 'LOG_FILE=' anvil-vm-deploy.sh"
     
     # Test 4: Security audit trail
     run_test "Security audit trail implementation" \
-        "grep -q 'SECURITY_AUDIT' ansible-vm.sh"
+        "grep -q 'SECURITY_AUDIT' anvil-vm-deploy.sh"
 }
 
 # Generate security report

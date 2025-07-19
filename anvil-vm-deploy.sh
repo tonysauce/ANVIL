@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ansible-vm.sh - ANVIL Infrastructure Management Platform
+# anvil-vm-deploy.sh - ANVIL Infrastructure Management Platform
 # Version: 3.0.1 - Syntax Fixed Edition
 
 # Enable strict error handling
@@ -372,7 +372,7 @@ function install_script() {
 function update_script() {
   header_info
   msg_info "Updating Installation Script"
-  wget -qO ansible-vm.sh https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh
+  wget -qO anvil-vm-deploy.sh https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh
   msg_ok "Updated Installation Script"
   exit
 }

@@ -708,7 +708,7 @@ case "${1:-}" in
         cat << 'EOF'
 Rocky Linux 9 Ansible LXC Deployment Script for ProxMox
 
-Usage: ./ansible-rocky-lxc-deploy.sh [options]
+Usage: ./anvil-rocky-lxc-deploy.sh [options]
 
 Environment Variables:
   CONTAINER_ID        Container ID (default: 200)
@@ -723,10 +723,10 @@ Environment Variables:
 
 Examples:
   # Deploy with defaults
-  ./ansible-rocky-lxc-deploy.sh
+  ./anvil-rocky-lxc-deploy.sh
   
   # Deploy with custom settings
-  CONTAINER_ID=201 CONTAINER_IP=192.168.1.100/24 ./ansible-rocky-lxc-deploy.sh
+  CONTAINER_ID=201 CONTAINER_IP=192.168.1.100/24 ./anvil-rocky-lxc-deploy.sh
 
 Services installed:
   - Ansible (latest from EPEL)

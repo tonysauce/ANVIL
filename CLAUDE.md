@@ -12,14 +12,14 @@ Ansible LXC deployment project for automating container and VM deployments with 
 - Added comprehensive security hardening and 2025 compliance standards
 
 ## Key Files
-- `ansible-lxc.sh` - Main LXC deployment script
-- `ansible-rocky-lxc-deploy.sh` - Rocky Linux specific deployment
-- `ansible-vm-standalone.sh` - Standalone VM deployment
-- `ansible-vm.sh` - VM deployment script
+- `anvil-lxc-deploy.sh` - Main LXC deployment script
+- `anvil-rocky-lxc-deploy.sh` - Rocky Linux specific deployment
+- `anvil-vm-standalone.sh` - Standalone VM deployment
+- `anvil-vm-deploy.sh` - VM deployment script
 - `security-hardening-2025.sh` - 2025 security standards
 - `vm-post-install.sh` - Post-installation configuration
 
-## Current Session Context (July 18, 2025)
+## Current Session Context (July 19, 2025)
 - **Session Type**: Continuation from previous conversation  
 - Working directory: /home/tony/ansible-lxc-deploy
 - **Private Repository**: User accesses via `gh api` commands
@@ -28,7 +28,7 @@ Ansible LXC deployment project for automating container and VM deployments with 
 
 ## Issues Resolved This Session
 
-### 1. NSAPP Unbound Variable Error (ansible-vm.sh)
+### 1. NSAPP Unbound Variable Error (anvil-vm-deploy.sh)
 - **Problem**: Script failing with "NSAPP: unbound variable" error at line 352
 - **Root Cause**: Variable used before definition with `set -u` enabled
 - **Solution**: Added default value initialization `NSAPP="${NSAPP:-ansible-vm}"`
@@ -61,14 +61,16 @@ Ansible LXC deployment project for automating container and VM deployments with 
 - **Private repo compatibility**: Works with `gh api` workflow
 
 ## Current Status Summary
-- ✅ **ansible-vm.sh**: Fully functional with UEFI/vTPM, no syntax errors
+- ✅ **anvil-vm-deploy.sh**: Fully functional with UEFI/vTPM, no syntax errors
 - ✅ **Build process**: Optimized with modern linting tools  
 - ✅ **Security standards**: 2025 compliance maintained throughout
 - ✅ **Git hooks**: Comprehensive validation with Husky 9.1.7
 - ✅ **Console access**: Fixed VGA redirection for proper display
 - 🔄 **Installation**: VM 103 created, working on UEFI boot issue
 
-## Session End Status (July 18, 2025)
+## Previous Sessions
+
+## Session End Status (July 19, 2025)
 - **Project Rebranding**: ✅ COMPLETED - Renamed to ANVIL (Ansible Navigator & Virtual Infrastructure Lab)
 - **VM Creation**: ✅ RESOLVED - Script working, UEFI boot issues fixed with DVD ISO
 - **Kickstart Automation**: ✅ IMPLEMENTED - Full STIG-compliant kickstart with CrowdSec
@@ -87,17 +89,17 @@ Ansible LXC deployment project for automating container and VM deployments with 
 **Execute directly on ProxMox host:**
 ```bash
 # ANVIL Infrastructure Platform (manual install)
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh)
 
 # ANVIL with Kickstart Automation (STIG + CrowdSec)
 # Modify VM creation to use kickstart:
 # --args 'inst.ks=https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/anvil-kickstart.cfg'
 
 # LXC container deployment  
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-lxc-deploy.sh)
 
 # Standalone VM deployment
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm-standalone.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-standalone.sh)
 ```
 
 ## ANVIL Stack Components
@@ -179,4 +181,4 @@ npm run lint              # Full project linting
 - **Security scanning**: Comprehensive security checks on push
 - **Conventional commits**: Standardized commit message format enforced
 
-## 2025 Security Standards Implementation\n\n### Security Enhancements Completed\n- **Modern Bash Practices**: Implemented strict error handling, input validation, secure logging\n- **Input Validation**: Comprehensive validation for all VM parameters (VMID, hostname, IP, etc.)\n- **Security Audit Trail**: All operations logged with security context and timestamps\n- **Zero Trust Architecture**: UEFI enforcement, TPM requirements, secure defaults\n- **Network Hardening**: Advanced firewall rules, kernel hardening, intrusion prevention\n- **Automated Testing**: Complete security test suite for validation\n\n### New Security Scripts\n1. **security-test-suite.sh**: Comprehensive security testing framework\n   - Tests script security, ProxMox integration, VM configuration\n   - Validates compliance with NIST CSF 2.0, CIS 8.1, Zero Trust, SLSA\n   - Generates detailed security reports\n\n2. **network-security-hardening.sh**: Advanced network security implementation\n   - Zero Trust firewall zones (management, internal, DMZ, quarantine)\n   - Kernel network hardening parameters\n   - Real-time network monitoring and alerting\n   - Fail2ban intrusion prevention\n   - Secure DNS configuration\n\n### Security Features in ansible-vm.sh\n- **Error Handling**: Comprehensive error trapping with security context\n- **Input Validation**: All user inputs validated and sanitized\n- **Logging**: Security audit trail with syslog integration\n- **Resource Checks**: Pre-deployment validation of system resources\n- **Secure Defaults**: UEFI + vTPM enforced, secure configurations\n- **PID Management**: Prevents concurrent execution\n- **Cleanup**: Secure cleanup of temporary files and sensitive data\n\n### Compliance Frameworks Implemented\n- **NIST CSF 2.0**: Governance function with risk management\n- **CIS Controls v8.1**: Enhanced asset management and configuration\n- **Zero Trust Architecture**: Never trust, always verify principles\n- **SLSA Framework**: Supply chain security level 2 readiness\n\n### Security Testing Commands\n```bash\n# Run comprehensive security tests\n./security-test-suite.sh\n\n# Apply network hardening\n./network-security-hardening.sh\n\n# Run 2025 security hardening\n./security-hardening-2025.sh\n```\n\n### Enhanced Deployment Commands\n```bash\n# Deploy VM with enhanced security\n./ansible-vm.sh\n\n# Deploy standalone VM\n./ansible-vm-standalone.sh\n\n# Check compliance status\n/opt/compliance/compliance-assessment.sh\n```\n\n### Monitoring and Maintenance\n```bash\n# Check security logs\njournalctl -f | grep SECURITY_AUDIT\n\n# Monitor network security\ntail -f /opt/network-monitoring/logs/network-activity.log\n\n# Check firewall status\nfirewall-cmd --list-all-zones\n\n# Review fail2ban status\nfail2ban-client status\n```"
+## 2025 Security Standards Implementation\n\n### Security Enhancements Completed\n- **Modern Bash Practices**: Implemented strict error handling, input validation, secure logging\n- **Input Validation**: Comprehensive validation for all VM parameters (VMID, hostname, IP, etc.)\n- **Security Audit Trail**: All operations logged with security context and timestamps\n- **Zero Trust Architecture**: UEFI enforcement, TPM requirements, secure defaults\n- **Network Hardening**: Advanced firewall rules, kernel hardening, intrusion prevention\n- **Automated Testing**: Complete security test suite for validation\n\n### New Security Scripts\n1. **security-test-suite.sh**: Comprehensive security testing framework\n   - Tests script security, ProxMox integration, VM configuration\n   - Validates compliance with NIST CSF 2.0, CIS 8.1, Zero Trust, SLSA\n   - Generates detailed security reports\n\n2. **network-security-hardening.sh**: Advanced network security implementation\n   - Zero Trust firewall zones (management, internal, DMZ, quarantine)\n   - Kernel network hardening parameters\n   - Real-time network monitoring and alerting\n   - Fail2ban intrusion prevention\n   - Secure DNS configuration\n\n### Security Features in anvil-vm-deploy.sh\n- **Error Handling**: Comprehensive error trapping with security context\n- **Input Validation**: All user inputs validated and sanitized\n- **Logging**: Security audit trail with syslog integration\n- **Resource Checks**: Pre-deployment validation of system resources\n- **Secure Defaults**: UEFI + vTPM enforced, secure configurations\n- **PID Management**: Prevents concurrent execution\n- **Cleanup**: Secure cleanup of temporary files and sensitive data\n\n### Compliance Frameworks Implemented\n- **NIST CSF 2.0**: Governance function with risk management\n- **CIS Controls v8.1**: Enhanced asset management and configuration\n- **Zero Trust Architecture**: Never trust, always verify principles\n- **SLSA Framework**: Supply chain security level 2 readiness\n\n### Security Testing Commands\n```bash\n# Run comprehensive security tests\n./security-test-suite.sh\n\n# Apply network hardening\n./network-security-hardening.sh\n\n# Run 2025 security hardening\n./security-hardening-2025.sh\n```\n\n### Enhanced Deployment Commands\n```bash\n# Deploy VM with enhanced security\n./anvil-vm-deploy.sh\n\n# Deploy standalone VM\n./anvil-vm-standalone.sh\n\n# Check compliance status\n/opt/compliance/compliance-assessment.sh\n```\n\n### Monitoring and Maintenance\n```bash\n# Check security logs\njournalctl -f | grep SECURITY_AUDIT\n\n# Monitor network security\ntail -f /opt/network-monitoring/logs/network-activity.log\n\n# Check firewall status\nfirewall-cmd --list-all-zones\n\n# Review fail2ban status\nfail2ban-client status\n```"

@@ -57,12 +57,12 @@ Choose your ANVIL deployment method:
 
 #### **ANVIL LXC Container (Lightweight)**
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-lxc-deploy.sh)"
 ```
 
 #### **ANVIL Infrastructure VM (Recommended)**
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh)"
 ```
 
 Both ANVIL deployment options provide enterprise-grade infrastructure management with interactive setup, security hardening, and 2025 compliance standards.
@@ -71,14 +71,14 @@ Both ANVIL deployment options provide enterprise-grade infrastructure management
 
 ```bash
 # Clone repository
-git clone https://github.com/tonysauce/ansible-lxc-deploy.git
-cd ansible-lxc-deploy
+git clone https://github.com/tonysauce/anvil-infrastructure-lab.git
+cd anvil-infrastructure-lab
 
 # For LXC Container
-./ansible-lxc.sh
+./anvil-lxc-deploy.sh
 
 # For Virtual Machine
-./ansible-vm.sh
+./anvil-vm-deploy.sh
 ```
 
 ### Custom Deployment
@@ -88,14 +88,14 @@ cd ansible-lxc-deploy
 CONTAINER_ID=201 \
 CONTAINER_IP=192.168.1.100/24 \
 CONTAINER_MEMORY=4096 \
-./ansible-lxc.sh
+./anvil-lxc-deploy.sh
 
 # Deploy VM with custom settings  
 VM_ID=301 \
 VM_IP=192.168.1.100/24 \
 VM_MEMORY=8192 \
 VM_DISK=64 \
-./ansible-vm.sh
+./anvil-vm-deploy.sh
 ```
 
 ## Configuration Options

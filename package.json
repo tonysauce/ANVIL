@@ -1,11 +1,11 @@
 {
-  "name": "ansible-lxc-deploy",
+  "name": "anvil-infrastructure-lab",
   "version": "1.0.0",
-  "description": "🚀 **Infrastructure as Code deployment script for creating an Ansible server on ProxMox using Rocky Linux 9**",
+  "description": "🚀 **ANVIL - Ansible Navigator & Virtual Infrastructure Lab for ProxMox deployments**",
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
-    "test": "echo \"Running infrastructure tests...\" && bash -n ansible-lxc.sh && bash -n security-hardening-2025.sh",
+    "test": "echo \"Running infrastructure tests...\" && bash -n anvil-lxc-deploy.sh && bash -n security-hardening-2025.sh",
     "lint": "echo \"Running shellcheck...\" && find . -name '*.sh' -exec shellcheck {} + || echo 'Install shellcheck for better linting'",
     "lint:fast": "npx lint-staged --allow-empty",
     "lint:changed": "git diff --name-only --cached | grep '\\.sh$' | xargs -r bash -n",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tonysauce/ansible-lxc-deploy.git"
+    "url": "git+https://github.com/tonysauce/anvil-infrastructure-lab.git"
   },
   "keywords": [
     "ansible",
@@ -33,9 +33,9 @@
   "author": "tonysauce",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tonysauce/ansible-lxc-deploy/issues"
+    "url": "https://github.com/tonysauce/anvil-infrastructure-lab/issues"
   },
-  "homepage": "https://github.com/tonysauce/ansible-lxc-deploy#readme",
+  "homepage": "https://github.com/tonysauce/anvil-infrastructure-lab#readme",
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
