@@ -13,7 +13,7 @@
 - [ ] Storage available for VM disk images (if using VM deployment)
 
 ### Repository Setup ✅
-- [ ] Repository cloned: `git clone https://github.com/tonysauce/anvil-infrastructure-lab.git`
+- [ ] Repository cloned: `git clone https://github.com/tonysauce/ANVIL.git`
 - [ ] All files present (check with `ls -la`)
 - [ ] Scripts have execute permissions (`chmod +x *.sh`)
 - [ ] Husky hooks installed (`npm install` if doing development)
@@ -25,7 +25,7 @@
 #### Option A: LXC Container (Lightweight)
 ```bash
 # Test the LXC one-liner installer
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-lxc-deploy.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-lxc-deploy.sh)"
 ```
 
 **LXC Validation Points:**
@@ -38,7 +38,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrast
 #### Option B: Virtual Machine (Recommended for Management Platform)
 ```bash
 # Test the VM one-liner installer
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-vm-deploy.sh)"
 ```
 
 **VM Validation Points:**

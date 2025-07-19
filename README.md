@@ -57,12 +57,12 @@ Choose your ANVIL deployment method:
 
 #### **ANVIL LXC Container (Lightweight)**
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-lxc-deploy.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-lxc-deploy.sh)"
 ```
 
 #### **ANVIL Infrastructure VM (Recommended)**
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-vm-deploy.sh)"
 ```
 
 Both ANVIL deployment options provide enterprise-grade infrastructure management with interactive setup, security hardening, and 2025 compliance standards.
@@ -71,8 +71,8 @@ Both ANVIL deployment options provide enterprise-grade infrastructure management
 
 ```bash
 # Clone repository
-git clone https://github.com/tonysauce/anvil-infrastructure-lab.git
-cd anvil-infrastructure-lab
+git clone https://github.com/tonysauce/ANVIL.git
+cd ANVIL
 
 # For LXC Container
 ./anvil-lxc-deploy.sh

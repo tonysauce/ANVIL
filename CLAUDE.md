@@ -89,17 +89,17 @@ Ansible LXC deployment project for automating container and VM deployments with 
 **Execute directly on ProxMox host:**
 ```bash
 # ANVIL Infrastructure Platform (manual install)
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-deploy.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-vm-deploy.sh)
 
 # ANVIL with Kickstart Automation (STIG + CrowdSec)
 # Modify VM creation to use kickstart:
 # --args 'inst.ks=https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/anvil-kickstart.cfg'
 
 # LXC container deployment  
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-lxc-deploy.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-lxc-deploy.sh)
 
 # Standalone VM deployment
-bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/anvil-infrastructure-lab/main/anvil-vm-standalone.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-vm-standalone.sh)
 ```
 
 ## ANVIL Stack Components
