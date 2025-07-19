@@ -481,29 +481,31 @@ function create_vm() {
   # Check for required ISO
   check_iso
   
-  # Create the VM with UEFI and vTPM support
+  # Create the VM with UEFI and vTPM support (fixed PCI hotplug issue)
   qm create $VM_ID \
     --name $HN \
     --ostype l26 \
     --memory $RAM_SIZE \
     --cores $CORE_COUNT \
-    --cpu $CPU_TYPE \
-    --machine $MACHINE \
-    --bios $BIOS \
-    --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
+    --cpu host \
+    --machine pc-q35-8.1 \
+    --bios ovmf \
+    --efidisk0 $STORAGE:1,efitype=4m \
     --tpmstate0 $STORAGE:1,version=v2.0 \
-    --scsihw virtio-scsi-pci \
-    --scsi0 $STORAGE:${DISK_SIZE},format=raw \
+    --scsihw virtio-scsi-single \
+    --scsi0 $STORAGE:${DISK_SIZE} \
     --ide2 $ISO_PATH,media=cdrom \
     --boot order=ide2 \
-    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
+    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU \
+    --vga qxl \
+    --args '-global ICH9-LPC.disable_s3=1 -global ICH9-LPC.disable_s4=1'
 
   # Set kickstart arguments if using automated installation
   if [[ "$USE_KICKSTART" == "yes" ]]; then
     msg_info "Configuring automated kickstart installation"
-    # Note: Due to QEMU/UEFI limitations, kickstart must be added manually
-    # At boot menu, press TAB and add: inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg
-    msg_ok "VM configured for kickstart (manual boot parameter required)"
+    # Add kernel arguments for automated kickstart
+    qm set $VM_ID --args '-append "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg inst.text inst.headless console=tty0 console=ttyS0,115200n8"'
+    msg_ok "VM configured for automated kickstart installation"
   fi
     
   # Configure network
