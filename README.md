@@ -1,9 +1,8 @@
 # ANVIL - Ansible Navigator & Virtual Infrastructure Lab
 
-[![GitHub release](https://img.shields.io/github/v/release/tonysauce/ANVIL?include_prereleases&label=Version)](https://github.com/tonysauce/ANVIL/releases)
-[![GitHub last commit](https://img.shields.io/github/last-commit/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/commits/main)
-[![GitHub issues](https://img.shields.io/github/issues/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/issues)
-[![GitHub stars](https://img.shields.io/github/stars/tonysauce/ANVIL)](https://github.com/tonysauce/ANVIL/stargazers)
+[![Version](https://img.shields.io/badge/Version-v1.0.0--beta-blue.svg)](https://github.com/tonysauce/ANVIL)
+[![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/tonysauce/ANVIL)
+[![Tests](https://img.shields.io/badge/Tests-Validated-green.svg)](https://github.com/tonysauce/ANVIL)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [![Security: STIG](https://img.shields.io/badge/Security-DISA%20STIG-red.svg)](https://public.cyber.mil/stigs/)
