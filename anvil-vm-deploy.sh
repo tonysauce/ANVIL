@@ -360,6 +360,18 @@ function install_script() {
   fi
   
   header_info
+  if (whiptail --title "INSTALLATION METHOD" --yesno "Use Automated Kickstart Installation?\n\nYes: Fully automated ANVIL installation\nNo: Manual installation with guidance" --no-button Manual 12 60); then
+    USE_KICKSTART="yes"
+    header_info
+    echo -e "${GN}Using Automated Kickstart Installation${CL}"
+    echo -e "${BL}ANVIL will be installed automatically with STIG compliance${CL}"
+  else
+    USE_KICKSTART="no"
+    header_info
+    echo -e "${YW}Using Manual Installation${CL}"
+  fi
+
+  header_info
   if (whiptail --title "SETTINGS" --yesno "Use Default Settings?" --no-button Advanced 10 58); then
     header_info
     echo -e "${BL}Using Default Settings${CL}"
@@ -470,21 +482,42 @@ function create_vm() {
   check_iso
   
   # Create the VM with UEFI and vTPM support
-  qm create $VM_ID \
-    --name $HN \
-    --ostype l26 \
-    --memory $RAM_SIZE \
-    --cores $CORE_COUNT \
-    --cpu $CPU_TYPE \
-    --machine $MACHINE \
-    --bios $BIOS \
-    --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
-    --tpmstate0 $STORAGE:1,version=v2.0 \
-    --scsihw virtio-scsi-pci \
-    --scsi0 $STORAGE:${DISK_SIZE},format=raw \
-    --ide2 $ISO_PATH,media=cdrom \
-    --boot order=ide2 \
-    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
+  if [[ "$USE_KICKSTART" == "yes" ]]; then
+    # Create VM with kickstart automation
+    qm create $VM_ID \
+      --name $HN \
+      --ostype l26 \
+      --memory $RAM_SIZE \
+      --cores $CORE_COUNT \
+      --cpu $CPU_TYPE \
+      --machine $MACHINE \
+      --bios $BIOS \
+      --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
+      --tpmstate0 $STORAGE:1,version=v2.0 \
+      --scsihw virtio-scsi-pci \
+      --scsi0 $STORAGE:${DISK_SIZE},format=raw \
+      --ide2 $ISO_PATH,media=cdrom \
+      --boot order=ide2 \
+      --net0 virtio,bridge=$BRG$MAC$VLAN$MTU \
+      --args "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg"
+  else
+    # Create VM for manual installation
+    qm create $VM_ID \
+      --name $HN \
+      --ostype l26 \
+      --memory $RAM_SIZE \
+      --cores $CORE_COUNT \
+      --cpu $CPU_TYPE \
+      --machine $MACHINE \
+      --bios $BIOS \
+      --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
+      --tpmstate0 $STORAGE:1,version=v2.0 \
+      --scsihw virtio-scsi-pci \
+      --scsi0 $STORAGE:${DISK_SIZE},format=raw \
+      --ide2 $ISO_PATH,media=cdrom \
+      --boot order=ide2 \
+      --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
+  fi
     
   # Configure network
   if [[ "$NET" != "dhcp" ]]; then
@@ -498,8 +531,12 @@ function create_vm() {
   
   msg_ok "Virtual Machine $VM_ID created successfully with UEFI + vTPM"
   
-  # Provide installation guidance (manual installation)
-  msg_info "VM ready for manual Rocky Linux installation"
+  # Provide installation guidance based on method
+  if [[ "$USE_KICKSTART" == "yes" ]]; then
+    msg_info "VM ready for automated ANVIL kickstart installation"
+  else
+    msg_info "VM ready for manual Rocky Linux installation"
+  fi
   
   # Start VM if requested
   if [[ "$START_VM" == "yes" ]]; then
@@ -518,27 +555,50 @@ function create_vm() {
     echo -e "${BL}Network: ${GN}$NET on $BRG${CL}"
     echo -e "${BL}Firmware: ${GN}UEFI with vTPM 2.0${CL}"
     echo ""
-    echo -e "${YW}Installation Instructions:${CL}"
-    echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
-    echo -e "${BL}2. Select 'Install Rocky Linux 9.6'${CL}"
-    echo -e "${BL}3. Choose language and keyboard layout${CL}"
-    echo -e "${BL}4. Configure disk partitioning (automatic is fine)${CL}"
-    echo -e "${BL}5. Set root password and create user account${CL}"
-    echo -e "${BL}6. Wait for installation to complete${CL}"
-    echo ""
-    echo -e "${YW}Recommended Settings:${CL}"
-    echo -e "${BL}• Root password: Create a strong password${CL}"
-    echo -e "${BL}• User account: Create 'ansible' user in wheel group${CL}"
-    echo -e "${BL}• Network: DHCP is pre-configured${CL}"
-    echo -e "${BL}• Services: Enable SSH for remote access${CL}"
-    echo ""
-    echo -e "${RD}After OS installation completes, run on the VM:${CL}"
-    echo -e "${GN}curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/vm-post-install.sh | bash${CL}"
+    if [[ "$USE_KICKSTART" == "yes" ]]; then
+      echo -e "${GN}✅ AUTOMATED KICKSTART INSTALLATION${CL}"
+      echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
+      echo -e "${BL}2. VM will boot and automatically install ANVIL${CL}"
+      echo -e "${BL}3. Installation includes full STIG compliance + CrowdSec${CL}"
+      echo -e "${BL}4. Wait ~15-20 minutes for complete installation${CL}"
+      echo ""
+      echo -e "${YW}ANVIL Access Credentials:${CL}"
+      echo -e "${BL}• Username: ${GN}anvil${CL} / Password: ${GN}anvil123${CL} (sudo access)"
+      echo -e "${BL}• Root: ${RD}locked${CL} (use anvil user with sudo)"
+      echo -e "${BL}• Disk encryption: ${GN}anvil123${CL}"
+      echo -e "${BL}• Web interface: ${GN}https://[VM-IP]:9090${CL} (Cockpit)"
+      echo -e "${BL}• Tang server: ${GN}https://[VM-IP]/tang${CL}"
+      echo ""
+      echo -e "${GN}🚀 ANVIL Stack Included:${CL}"
+      echo -e "${BL}• Cockpit - Web management interface${CL}"
+      echo -e "${BL}• Ansible - Infrastructure automation${CL}"
+      echo -e "${BL}• Tang - Network-bound disk encryption${CL}"
+      echo -e "${BL}• Nginx - Reverse proxy with SSL${CL}"
+      echo -e "${BL}• CrowdSec - Modern collective security${CL}"
+    else
+      echo -e "${YW}Manual Installation Instructions:${CL}"
+      echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
+      echo -e "${BL}2. Select 'Install Rocky Linux 9.6'${CL}"
+      echo -e "${BL}3. Choose language and keyboard layout${CL}"
+      echo -e "${BL}4. Configure disk partitioning (automatic is fine)${CL}"
+      echo -e "${BL}5. Set root password and create user account${CL}"
+      echo -e "${BL}6. Wait for installation to complete${CL}"
+      echo ""
+      echo -e "${YW}Recommended Settings:${CL}"
+      echo -e "${BL}• Root password: Create a strong password${CL}"
+      echo -e "${BL}• User account: Create 'ansible' user in wheel group${CL}"
+      echo -e "${BL}• Network: DHCP is pre-configured${CL}"
+      echo -e "${BL}• Services: Enable SSH for remote access${CL}"
+      echo ""
+      echo -e "${RD}After OS installation completes, run on the VM:${CL}"
+      echo -e "${GN}curl -fsSL https://raw.githubusercontent.com/tonysauce/ANVIL/main/vm-post-install.sh | bash${CL}"
+    fi
   fi
 }
 
-# Manual installation - no automated kickstart needed
-# User will complete installation through ProxMox console
+# Installation methods supported:
+# 1. Automated kickstart - Fully automated ANVIL installation
+# 2. Manual installation - User completes installation through ProxMox console
 
 # Check if user wants to update the script
 if [[ "${1:-}" == "update" ]]; then
