@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
+# ANVIL - Ansible Navigator & Virtual Infrastructure Lab
 # Standalone Rocky Linux 9 VM Deployment for ProxMox
-# Infrastructure Management Platform
 # Copyright (c) 2024 Infrastructure as Code Deployment
 # Author: tonysauce  
 # License: MIT
@@ -50,7 +50,7 @@ msg_error() {
 }
 
 # Set application variables
-NSAPP="ansible-vm"
+NSAPP="anvil"
 var_disk="32"
 var_cpu="4"
 var_ram="4096"

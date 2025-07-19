@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ansible-vm.sh - Rocky Linux 9 VM Deployment for ProxMox
+# ansible-vm.sh - ANVIL Infrastructure Management Platform
 # Version: 3.0.1 - Syntax Fixed Edition
 
 # Enable strict error handling
@@ -47,22 +47,23 @@ clear
 cat <<"EOF"
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║    ██████╗  ██████╗  ██████╗ ██╗  ██╗██╗   ██╗    ██╗   ██╗  ║
-║    ██╔══██╗██╔═══██╗██╔════╝ ██║ ██╔╝╚██╗ ██╔╝    ██║   ██║  ║
-║    ██████╔╝██║   ██║██║      █████╔╝  ╚████╔╝     ██║   ██║  ║
-║    ██╔══██╗██║   ██║██║      ██╔═██╗   ╚██╔╝      ╚██╗ ██╔╝  ║
-║    ██║  ██║╚██████╔╝╚██████╗ ██║  ██╗   ██║        ╚████╔╝   ║
-║    ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═══╝    ║
+║      █████╗ ███╗   ██╗██╗   ██╗██╗██╗                        ║
+║     ██╔══██╗████╗  ██║██║   ██║██║██║                        ║
+║     ███████║██╔██╗ ██║██║   ██║██║██║                        ║
+║     ██╔══██║██║╚██╗██║╚██╗ ██╔╝██║██║                        ║
+║     ██║  ██║██║ ╚████║ ╚████╔╝ ██║███████╗                   ║
+║     ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝                   ║
 ║                                                               ║
-║              Rocky Linux 9 VM Deployment for ProxMox         ║
-║                   Infrastructure Management Platform         ║
+║        Ansible Navigator & Virtual Infrastructure Lab        ║
+║           Rocky Linux Infrastructure Management VM           ║
+║                 Cockpit • Ansible • Tang • Nginx            ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
 }
 
 # Set default application name if not defined
-NSAPP="${NSAPP:-ansible-vm}"
+NSAPP="${NSAPP:-anvil}"
 
 header_info
 echo -e "Loading..."
@@ -158,7 +159,7 @@ function echo_default() {
   echo -e "${DGN}Using VLAN Tag: ${BGN}$VLAN${CL}"
   echo -e "${DGN}Start VM after creation: ${BGN}$START_VM${CL}"
   echo -e "${DGN}Firmware: ${BGN}UEFI with vTPM 2.0${CL}"
-  echo -e "${BL}Creating a Rocky Linux 9 Infrastructure Management VM using the above default settings${CL}"
+  echo -e "${BL}Creating ANVIL - Infrastructure Management Platform using the above default settings${CL}"
 }
 
 function exit-script() {
@@ -336,8 +337,8 @@ function advanced_settings() {
     exit-script
   fi
 
-  if (whiptail --defaultno --title "ADVANCED SETTINGS COMPLETE" --yesno "Ready to create Rocky Linux 9 Infrastructure Management VM?" --no-button Do-Over 10 58); then
-    echo -e "${RD}Creating a Rocky Linux 9 Infrastructure Management VM using the above advanced settings${CL}"
+  if (whiptail --defaultno --title "ADVANCED SETTINGS COMPLETE" --yesno "Ready to create ANVIL Infrastructure Management Platform?" --no-button Do-Over 10 58); then
+    echo -e "${RD}Creating ANVIL - Infrastructure Management Platform using the above advanced settings${CL}"
   else
     header_info
     echo -e "${RD}Using Advanced Settings${CL}"
@@ -555,4 +556,4 @@ fi
 # Create the VM
 create_vm
 
-msg_ok "Infrastructure Management VM deployment completed!"
+msg_ok "ANVIL Infrastructure Management Platform deployment completed!"

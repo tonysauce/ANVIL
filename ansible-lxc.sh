@@ -7,18 +7,25 @@ source <(curl -fsSL https://raw.githubusercontent.com/tonysauce/ansible-lxc-depl
 function header_info {
 clear
 cat <<"EOF"
-    ___              _ __    __         __   _  ________
-   /   |  ____  ___ (_) /_  / /__      / /  | |/ / ____/
-  / /| | / __ \/ __ \/ / __ \/ / _ \    / /   |   / /     
- / ___ |/ / / / /_/ / / /_/ / /  __/   / /___/   / /___   
-/_/  |_/_/ /_/\____/_/_.___/_/\___/   /_____/_/|_\____/   
-
-         Rocky Linux 9 Deployment for ProxMox
-         
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║      █████╗ ███╗   ██╗██╗   ██╗██╗██╗                        ║
+║     ██╔══██╗████╗  ██║██║   ██║██║██║                        ║
+║     ███████║██╔██╗ ██║██║   ██║██║██║                        ║
+║     ██╔══██║██║╚██╗██║╚██╗ ██╔╝██║██║                        ║
+║     ██║  ██║██║ ╚████║ ╚████╔╝ ██║███████╗                   ║
+║     ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝                   ║
+║                                                               ║
+║        Ansible Navigator & Virtual Infrastructure Lab        ║
+║              Rocky Linux 9 LXC Container Deploy              ║
+║                 Cockpit • Ansible • Tang • Nginx            ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
 EOF
 }
 header_info
 echo -e "Loading..."
+NSAPP="${NSAPP:-anvil}"
 NSAPP=$(echo ${NSAPP,,} | tr -d ' ')
 var_disk="20"
 var_cpu="2"
@@ -54,7 +61,7 @@ function default_settings() {
 }
 
 function echo_default() {
-  echo -e "${BL}Creating a ${APP} LXC using the above default settings${CL}"
+  echo -e "${BL}Creating ANVIL LXC Container using the above default settings${CL}"
 }
 
 function advanced_settings() {

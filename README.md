@@ -1,17 +1,18 @@
-# Ansible LXC Deployment for ProxMox
+# ANVIL - Ansible Navigator & Virtual Infrastructure Lab
 
-🚀 **Infrastructure as Code deployment script for creating an Ansible server on ProxMox using Rocky Linux 9**
+🚀 **ANVIL Infrastructure Management Platform - Complete automation suite for ProxMox deployments**
 
-This script automates the deployment of a complete Ansible infrastructure server in an LXC container, featuring web hosting capabilities for kickstart/ignition files and Tang server for Network Bound Disk Encryption (NBDE).
+ANVIL automates the deployment of enterprise-grade infrastructure management platforms with comprehensive security hardening, featuring Ansible automation, web management interfaces, and advanced encryption capabilities for modern data centers.
 
 ## Features
 
-### 🏗️ **Infrastructure Components**
-- **Rocky Linux 9** - Enterprise-grade foundation
-- **Ansible** - Latest version with collections pre-installed
-- **Nginx Web Server** - Hosts kickstart and ignition files with HTTPS
-- **Tang Server** - NBDE for automated LUKS disk encryption
-- **CrowdSec** - Collaborative security with community threat intelligence
+### 🏗️ **ANVIL Stack Components**
+- **Cockpit** - Web-based server management interface (port 9090)
+- **Ansible** - Infrastructure automation and orchestration platform
+- **Tang** - Network-bound disk encryption server (port 7500)
+- **Nginx** - Reverse proxy with SSL termination and load balancing
+- **CrowdSec** - Modern collective security (replaces fail2ban)
+- **Rocky Linux 9** - Enterprise-grade foundation with STIG compliance
 - **Firewalld** - Zone-based firewall with enterprise features
 - **SELinux** - Mandatory access controls in enforcing mode
 
@@ -52,19 +53,19 @@ This script automates the deployment of a complete Ansible infrastructure server
 
 ### 🚀 One-Liner Installation
 
-Choose between LXC Container or Virtual Machine deployment:
+Choose your ANVIL deployment method:
 
-#### **LXC Container (Lightweight)**
+#### **ANVIL LXC Container (Lightweight)**
 ```bash
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-lxc.sh)"
 ```
 
-#### **Virtual Machine (Recommended for Management Platform)**
+#### **ANVIL Infrastructure VM (Recommended)**
 ```bash
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/tonysauce/ansible-lxc-deploy/main/ansible-vm.sh)"
 ```
 
-Both options follow the exact same pattern as ProxMox Community Scripts and provide interactive setup with default and advanced configuration options.
+Both ANVIL deployment options provide enterprise-grade infrastructure management with interactive setup, security hardening, and 2025 compliance standards.
 
 ### Alternative: Manual Installation
 
