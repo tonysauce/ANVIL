@@ -482,41 +482,27 @@ function create_vm() {
   check_iso
   
   # Create the VM with UEFI and vTPM support
+  qm create $VM_ID \
+    --name $HN \
+    --ostype l26 \
+    --memory $RAM_SIZE \
+    --cores $CORE_COUNT \
+    --cpu $CPU_TYPE \
+    --machine $MACHINE \
+    --bios $BIOS \
+    --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
+    --tpmstate0 $STORAGE:1,version=v2.0 \
+    --scsihw virtio-scsi-pci \
+    --scsi0 $STORAGE:${DISK_SIZE},format=raw \
+    --ide2 $ISO_PATH,media=cdrom \
+    --boot order=ide2 \
+    --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
+
+  # Set kickstart arguments if using automated installation
   if [[ "$USE_KICKSTART" == "yes" ]]; then
-    # Create VM with kickstart automation
-    qm create $VM_ID \
-      --name $HN \
-      --ostype l26 \
-      --memory $RAM_SIZE \
-      --cores $CORE_COUNT \
-      --cpu $CPU_TYPE \
-      --machine $MACHINE \
-      --bios $BIOS \
-      --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
-      --tpmstate0 $STORAGE:1,version=v2.0 \
-      --scsihw virtio-scsi-pci \
-      --scsi0 $STORAGE:${DISK_SIZE},format=raw \
-      --ide2 $ISO_PATH,media=cdrom \
-      --boot order=ide2 \
-      --net0 virtio,bridge=$BRG$MAC$VLAN$MTU \
-      --args "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg"
-  else
-    # Create VM for manual installation
-    qm create $VM_ID \
-      --name $HN \
-      --ostype l26 \
-      --memory $RAM_SIZE \
-      --cores $CORE_COUNT \
-      --cpu $CPU_TYPE \
-      --machine $MACHINE \
-      --bios $BIOS \
-      --efidisk0 $STORAGE:1,efitype=4m,pre-enrolled-keys=1 \
-      --tpmstate0 $STORAGE:1,version=v2.0 \
-      --scsihw virtio-scsi-pci \
-      --scsi0 $STORAGE:${DISK_SIZE},format=raw \
-      --ide2 $ISO_PATH,media=cdrom \
-      --boot order=ide2 \
-      --net0 virtio,bridge=$BRG$MAC$VLAN$MTU
+    msg_info "Configuring automated kickstart installation"
+    qm set $VM_ID --args "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg inst.gpt"
+    msg_ok "Kickstart configuration applied"
   fi
     
   # Configure network
