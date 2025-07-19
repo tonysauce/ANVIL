@@ -503,9 +503,9 @@ function create_vm() {
   # Set kickstart arguments if using automated installation
   if [[ "$USE_KICKSTART" == "yes" ]]; then
     msg_info "Configuring automated kickstart installation"
-    # Add kernel arguments for automated kickstart
-    qm set $VM_ID --args '-append "inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg inst.text inst.headless console=tty0 console=ttyS0,115200n8"'
-    msg_ok "VM configured for automated kickstart installation"
+    # Note: UEFI boot mode requires manual kickstart parameter entry
+    # The kickstart URL will be provided in the instructions below
+    msg_ok "VM configured for UEFI kickstart (manual parameter required)"
   fi
     
   # Configure network
@@ -545,12 +545,14 @@ function create_vm() {
     echo -e "${BL}Firmware: ${GN}UEFI with vTPM 2.0${CL}"
     echo ""
     if [[ "$USE_KICKSTART" == "yes" ]]; then
-      echo -e "${GN}✅ AUTOMATED KICKSTART INSTALLATION${CL}"
+      echo -e "${GN}✅ AUTOMATED KICKSTART INSTALLATION (UEFI Mode)${CL}"
       echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
-      echo -e "${BL}2. At Rocky Linux boot menu, press ${YW}TAB${CL} on 'Install Rocky Linux 9.6'${CL}"
-      echo -e "${BL}3. Add to end of line: ${GN}inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg${CL}"
-      echo -e "${BL}4. Press ${YW}ENTER${CL} - ANVIL will install automatically${CL}"
-      echo -e "${BL}5. Wait ~15-20 minutes for complete installation${CL}"
+      echo -e "${BL}2. Boot will start automatically (5 second timeout)${CL}"
+      echo -e "${BL}3. At Rocky Linux boot menu, press ${YW}e${CL} to edit the boot entry${CL}"
+      echo -e "${BL}4. Find the line starting with 'linuxefi' and add to the end:${CL}"
+      echo -e "${GN}   inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg${CL}"
+      echo -e "${BL}5. Press ${YW}Ctrl+X${CL} to boot with kickstart${CL}"
+      echo -e "${BL}6. Wait ~15-20 minutes for complete automated installation${CL}"
       echo ""
       echo -e "${YW}ANVIL Access Credentials:${CL}"
       echo -e "${BL}• Username: ${GN}anvil${CL} / Password: ${GN}anvil123${CL} (sudo access)"
