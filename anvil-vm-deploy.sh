@@ -501,8 +501,9 @@ function create_vm() {
   # Set kickstart arguments if using automated installation
   if [[ "$USE_KICKSTART" == "yes" ]]; then
     msg_info "Configuring automated kickstart installation"
-    qm set $VM_ID --args 'inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg'
-    msg_ok "Kickstart configuration applied"
+    # Note: Due to QEMU/UEFI limitations, kickstart must be added manually
+    # At boot menu, press TAB and add: inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg
+    msg_ok "VM configured for kickstart (manual boot parameter required)"
   fi
     
   # Configure network
@@ -544,9 +545,10 @@ function create_vm() {
     if [[ "$USE_KICKSTART" == "yes" ]]; then
       echo -e "${GN}✅ AUTOMATED KICKSTART INSTALLATION${CL}"
       echo -e "${BL}1. Open ProxMox web interface → VM $VM_ID → Console${CL}"
-      echo -e "${BL}2. VM will boot and automatically install ANVIL${CL}"
-      echo -e "${BL}3. Installation includes full STIG compliance + CrowdSec${CL}"
-      echo -e "${BL}4. Wait ~15-20 minutes for complete installation${CL}"
+      echo -e "${BL}2. At Rocky Linux boot menu, press ${YW}TAB${CL} on 'Install Rocky Linux 9.6'${CL}"
+      echo -e "${BL}3. Add to end of line: ${GN}inst.ks=https://raw.githubusercontent.com/tonysauce/ANVIL/main/anvil-kickstart.cfg${CL}"
+      echo -e "${BL}4. Press ${YW}ENTER${CL} - ANVIL will install automatically${CL}"
+      echo -e "${BL}5. Wait ~15-20 minutes for complete installation${CL}"
       echo ""
       echo -e "${YW}ANVIL Access Credentials:${CL}"
       echo -e "${BL}• Username: ${GN}anvil${CL} / Password: ${GN}anvil123${CL} (sudo access)"
