@@ -64,3 +64,6 @@ test_*
 # Build outputs
 dist/
 build/
+
+# ISO files (too large for GitHub)
+*.iso
